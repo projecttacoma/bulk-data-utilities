@@ -76,7 +76,7 @@ async function queryBulkDataServer(url: string): Promise<void> {
   await axios
     .get(url, { headers })
     .then(resp => {
-      pollServer(resp.headers['content-location']);
+      probeServer(resp.headers['content-location']);
     })
     .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));
 }
@@ -86,10 +86,10 @@ async function queryBulkDataServer(url: string): Promise<void> {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-async function pollServer(url: string): Promise<BulkDataResponse | void> {
+async function probeServer(url: string): Promise<BulkDataResponse | void> {
   const results = await axios.get(url, { headers });
   if (results.status === 202) {
-    setTimeout(() => pollServer(url), 1000);
+    setTimeout(() => probeServer(url), 1000);
   } else if (results.status === 200) {
     console.log(results.data.output);
   } else if (results.status === 500) {
