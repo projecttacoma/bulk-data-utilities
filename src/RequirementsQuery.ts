@@ -13,6 +13,21 @@ const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PAT
 const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
+const EXAMPLE_REQUIREMENTS = [
+  {
+    type: 'Encounter',
+    codeFilter: []
+  },
+  {
+    type: 'Procedure',
+    codeFilter: []
+  },
+  {
+    type: 'Patient',
+    codeFilter: []
+  }
+];
+
 /**
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequrements function
@@ -36,10 +51,10 @@ export const getDataRequirementsQueries = (dataRequirements: R4.IDataRequirement
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
-      if (dr?.codeFilter?.[0].code?.[0]) {
+      if (dr?.codeFilter?.[0]?.code?.[0]) {
         const key = dr?.codeFilter?.[0].path;
         key && (q.params[key] = dr.codeFilter[0].code[0].code);
-      } else if (dr?.codeFilter?.[0].valueSet) {
+      } else if (dr?.codeFilter?.[0]?.valueSet) {
         const key = `${dr?.codeFilter?.[0].path}:in`;
         key && (q.params[key] = dr.codeFilter[0].valueSet);
       }
@@ -107,11 +122,20 @@ async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  const params = getDataRequirementsQueries(dr.results.dataRequirement);
-  const url = API_URL.concat('/$export?_type=Patient'); //, params._type, '&_typeFilter=', params._typeFilter);
+  await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+}
+
+/**
+ * takes in data requirements and creates a URL to query bulk data server, then queries it
+ * @param requirements : dataRequirements as output from fqm-execution
+ */
+async function retrieveBulkDataFromRequirements(requirements: R4.IDataRequirement[]): Promise<void> {
+  const params = getDataRequirementsQueries(requirements);
+  const url = API_URL.concat('/$export?_type=', params._type, '&_typeFilter=', params._typeFilter);
   console.log(url);
   console.log(JSON.stringify(params, null, 4));
   queryBulkDataServer(url);
 }
 
-//retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE
+//retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
+//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
