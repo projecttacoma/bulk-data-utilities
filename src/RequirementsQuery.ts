@@ -131,7 +131,7 @@ async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
  */
 async function retrieveBulkDataFromRequirements(requirements: R4.IDataRequirement[]): Promise<void> {
   const params = getDataRequirementsQueries(requirements);
-  const url = API_URL.concat('/$export?_type=', params._type, '&_typeFilter=', params._typeFilter);
+  const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   console.log(url);
   console.log(JSON.stringify(params, null, 4));
   queryBulkDataServer(url);
