@@ -31,7 +31,7 @@ const EXAMPLE_REQUIREMENTS = [
 /**
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequrements function
- * @param filePath: path to measure bundloe on local machine
+ * @param filePath: path to measure bundle on local machine
  * @returns
  */
 function parseBundle(filePath: string): R4.IBundle {
