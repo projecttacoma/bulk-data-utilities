@@ -40,7 +40,7 @@ function parseBundle(filePath: string): R4.IBundle {
 }
 
 /**
- * extracts the data requirements and fomrats
+ * extracts the data requirements and formats
  * @param dataRequirements: An array of data requirements as returned from fqm-execution
  * @returns
  */
