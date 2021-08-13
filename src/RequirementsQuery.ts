@@ -30,7 +30,7 @@ const EXAMPLE_REQUIREMENTS = [
 
 /**
  * Function taken directly from fqm-execution. parses measure bundle into
- * appropriate format for dataRequrements function
+ * appropriate format for dataRequirements function
  * @param filePath: path to measure bundle on local machine
  * @returns
  */
