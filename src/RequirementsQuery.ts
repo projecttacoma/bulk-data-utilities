@@ -32,7 +32,7 @@ const EXAMPLE_REQUIREMENTS = [
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequirements function
  * @param filePath: path to measure bundle on local machine
- * @returns
+ * @returns parsed bundle
  */
 function parseBundle(filePath: string): R4.IBundle {
   const contents = fs.readFileSync(filePath, 'utf8');
