@@ -70,17 +70,18 @@ export const getDataRequirementsQueries = (dataRequirements: R4.IDataRequirement
     return acc;
   }, []);
   const formattedTypes = uniqTypes.join(',');
-  let formattedTypeFilter = queries.reduce((acc, e) => {
+  const formattedTypeFilter = queries.reduce((acc: string[], e) => {
     //if the params object is empty, we dont want to add any params
     if (Object.keys(e.params).length > 0) {
-      acc = acc.concat(e.endpoint, '%3F', new URLSearchParams(e.params).toString(), ',');
+      acc.push(`${e.endpoint}%3F${new URLSearchParams(e.params).toString()}`);
     }
     return acc;
-  }, '');
+  }, []);
   //get rid of that last pesky comma
-  formattedTypeFilter = formattedTypeFilter.substring(0, formattedTypeFilter.length - 1);
+  const typeFilterString = formattedTypeFilter.join(',');
+  //formattedTypeFilter = formattedTypeFilter.substring(0, formattedTypeFilter.length - 1);
 
-  return { _type: formattedTypes, _typeFilter: formattedTypeFilter };
+  return { _type: formattedTypes, _typeFilter: typeFilterString };
 };
 
 /**
@@ -119,7 +120,7 @@ async function probeServer(url: string): Promise<void> {
  */
 async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
-  console.log(JSON.stringify(dr, null, 4));
+  console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
