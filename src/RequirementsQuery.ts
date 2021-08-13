@@ -10,6 +10,8 @@ const headers = {
   Prefer: 'respond-async'
 };
 const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+
+//Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
@@ -27,12 +29,11 @@ const EXAMPLE_REQUIREMENTS = [
     codeFilter: []
   }
 ];
-
 /**
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequirements function
  * @param filePath: path to measure bundle on local machine
- * @returns parsed bundle
+ * @returns R4.IBundle: a MeasureBunlde as a JSON object parsed from the passed file
  */
 function parseBundle(filePath: string): R4.IBundle {
   const contents = fs.readFileSync(filePath, 'utf8');
@@ -42,7 +43,7 @@ function parseBundle(filePath: string): R4.IBundle {
 /**
  * extracts the data requirements and formats
  * @param dataRequirements: An array of data requirements as returned from fqm-execution
- * @returns
+ * @returns APIParams: An object containing the _type and _typeFilter strings to be appended to the URL as parameters
  */
 export const getDataRequirementsQueries = (dataRequirements: R4.IDataRequirement[]): APIParams => {
   const queries: DRQuery[] = [];
@@ -101,7 +102,7 @@ async function queryBulkDataServer(url: string): Promise<void> {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-async function probeServer(url: string): Promise<BulkDataResponse | void> {
+async function probeServer(url: string): Promise<void> {
   const results = await axios.get(url, { headers });
   if (results.status === 202) {
     setTimeout(() => probeServer(url), 1000);
