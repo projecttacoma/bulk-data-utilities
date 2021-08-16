@@ -77,7 +77,6 @@ export const getDataRequirementsQueries = (dataRequirements: R4.IDataRequirement
     }
     return acc;
   }, []);
-  //get rid of that last pesky comma
   const typeFilterString = formattedTypeFilter.join(',');
 
   return { _type: formattedTypes, _typeFilter: typeFilterString };
