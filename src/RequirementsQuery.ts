@@ -33,7 +33,7 @@ const EXAMPLE_REQUIREMENTS = [
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequirements function
  * @param filePath: path to measure bundle on local machine
- * @returns R4.IBundle: a MeasureBunlde as a JSON object parsed from the passed file
+ * @returns R4.IBundle: a MeasureBundle as a JSON object parsed from the passed file
  */
 function parseBundle(filePath: string): R4.IBundle {
   const contents = fs.readFileSync(filePath, 'utf8');
@@ -79,7 +79,6 @@ export const getDataRequirementsQueries = (dataRequirements: R4.IDataRequirement
   }, []);
   //get rid of that last pesky comma
   const typeFilterString = formattedTypeFilter.join(',');
-  //formattedTypeFilter = formattedTypeFilter.substring(0, formattedTypeFilter.length - 1);
 
   return { _type: formattedTypes, _typeFilter: typeFilterString };
 };
