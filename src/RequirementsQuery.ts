@@ -1,5 +1,4 @@
 import { Calculator } from 'fqm-execution';
-import { R4 } from '@ahryman40k/ts-fhir-types';
 import fs from 'fs';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
@@ -33,11 +32,11 @@ const EXAMPLE_REQUIREMENTS = [
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequirements function
  * @param filePath: path to measure bundle on local machine
- * @returns R4.IBundle: a MeasureBundle as a JSON object parsed from the passed file
+ * @returns fhir4.Bundle: a MeasureBundle as a JSON object parsed from the passed file
  */
-function parseBundle(filePath: string): R4.IBundle {
+function parseBundle(filePath: string): fhir4.Bundle {
   const contents = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(contents) as R4.IBundle;
+  return JSON.parse(contents) as fhir4.Bundle;
 }
 
 /**
@@ -45,7 +44,7 @@ function parseBundle(filePath: string): R4.IBundle {
  * @param dataRequirements: An array of data requirements as returned from fqm-execution
  * @returns APIParams: An object containing the _type and _typeFilter strings to be appended to the URL as parameters
  */
-export const getDataRequirementsQueries = (dataRequirements: R4.IDataRequirement[]): APIParams => {
+export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequirement[]): APIParams => {
   const queries: DRQuery[] = [];
 
   //converts dataRequirements output into a format easily parsed into URL params
@@ -129,7 +128,7 @@ async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
  * takes in data requirements and creates a URL to query bulk data server, then queries it
  * @param requirements : dataRequirements as output from fqm-execution
  */
-async function retrieveBulkDataFromRequirements(requirements: R4.IDataRequirement[]): Promise<void> {
+async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
   const params = getDataRequirementsQueries(requirements);
   const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   console.log(url);
