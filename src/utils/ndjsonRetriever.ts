@@ -15,5 +15,5 @@ export function retrieveNDJSON(serverOutput: { type: string; count: number; url:
       headers: HEADERS
     });
   });
-  Promise.all(requestsArray).then(results => populateDB(results));
+  Promise.all(requestsArray).then(results => console.log(results));
 }
