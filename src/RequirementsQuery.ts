@@ -3,12 +3,14 @@ import fs from 'fs';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
-
+import { retrieveNDJSON } from './utils/ndjsonRetriever';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
 };
-const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+
+const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 //Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 const API_URL =
@@ -105,7 +107,8 @@ async function probeServer(url: string): Promise<void> {
   if (results.status === 202) {
     setTimeout(() => probeServer(url), 1000);
   } else if (results.status === 200) {
-    console.log(results.data.output);
+    // instead of console log, call retriever
+    retrieveNDJSON(results.data.output);
   } else if (results.status === 500) {
     console.error(results.data);
   }
@@ -137,4 +140,4 @@ async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirem
 }
 
 //retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
-//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
+retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS

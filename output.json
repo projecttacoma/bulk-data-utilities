@@ -1,0 +1,151 @@
+[
+    {
+        "type": "Coverage",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.114222.4.11.3591"
+            }
+        ]
+    },
+    {
+        "type": "Procedure",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1010"
+            }
+        ]
+    },
+    {
+        "type": "Procedure",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1038"
+            }
+        ]
+    },
+    {
+        "type": "Procedure",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1019"
+            }
+        ]
+    },
+    {
+        "type": "Condition",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1001"
+            }
+        ]
+    },
+    {
+        "type": "Observation",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1011"
+            }
+        ]
+    },
+    {
+        "type": "Observation",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1039"
+            }
+        ]
+    },
+    {
+        "type": "Procedure",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1020"
+            }
+        ]
+    },
+    {
+        "type": "Encounter",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.666.5.307"
+            }
+        ]
+    },
+    {
+        "type": "ServiceRequest",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1108.15"
+            }
+        ]
+    },
+    {
+        "type": "Procedure",
+        "codeFilter": [
+            {
+                "path": "code",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1108.15"
+            }
+        ]
+    },
+    {
+        "type": "Encounter",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001"
+            }
+        ]
+    },
+    {
+        "type": "Encounter",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1240"
+            }
+        ]
+    },
+    {
+        "type": "Encounter",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1025"
+            }
+        ]
+    },
+    {
+        "type": "Encounter",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023"
+            }
+        ]
+    },
+    {
+        "type": "Encounter",
+        "codeFilter": [
+            {
+                "path": "type",
+                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1016"
+            }
+        ]
+    }
+]
+https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir/$export?_type=Coverage,Procedure,Condition,Observation,Encounter,ServiceRequest&_typeFilter=Coverage%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.114222.4.11.3591,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1010,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1038,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1019,Condition%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1001,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1011,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1039,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1020,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.666.5.307,ServiceRequest%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1001,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.526.3.1240,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1025,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1023,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1016
+{
+    "_type": "Coverage,Procedure,Condition,Observation,Encounter,ServiceRequest",
+    "_typeFilter": "Coverage%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.114222.4.11.3591,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1010,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1038,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1019,Condition%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1001,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1011,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1039,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1020,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.666.5.307,ServiceRequest%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1001,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.526.3.1240,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1025,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1023,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1016"
+}
