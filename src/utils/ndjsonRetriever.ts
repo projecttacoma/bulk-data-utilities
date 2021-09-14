@@ -1,5 +1,6 @@
+// TO-DO: Determine if we still need this file???
+
 import axios from 'axios';
-import { populateDB } from './ndjsonParser';
 
 const HEADERS = {
   'Content-Type': 'application/fhir+ndjson'

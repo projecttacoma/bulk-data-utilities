@@ -18,22 +18,19 @@ const API_URL =
 
 const EXAMPLE_REQUIREMENTS = [
   {
-    type: 'Practitioner',
+    type: 'Encounter',
+    codeFilter: []
+  },
+  {
+    type: 'Procedure',
+    codeFilter: []
+  },
+  {
+    type: 'Patient',
     codeFilter: []
   }
-  // {
-  //   type: 'Encounter',
-  //   codeFilter: []
-  // },
-  // {
-  //   type: 'Procedure',
-  //   codeFilter: []
-  // },
-  // {
-  //   type: 'Patient',
-  //   codeFilter: []
-  // }
 ];
+
 /**
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequirements function
@@ -112,7 +109,7 @@ async function probeServer(url: string): Promise<void> {
     setTimeout(() => probeServer(url), 1000);
   } else if (results.status === 200) {
     // instead of console log, call retriever
-    retrieveNDJSON(results.data.output);
+    console.log(results.data.output);
     //console.log(results.data.output);
   } else if (results.status === 500) {
     console.error(results.data);

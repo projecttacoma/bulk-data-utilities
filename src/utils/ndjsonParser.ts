@@ -2,14 +2,10 @@ import * as sqlite3 from 'sqlite3';
 import * as Walker from 'walk';
 import * as FS from 'fs';
 import * as Path from 'path';
+import { DBWithPromise } from '../types/DatabaseTypes';
 
 let insertedResources = 0;
 let checkedReferences = 0;
-
-interface DBWithPromise extends sqlite3.Database {
-  promise?: any;
-  [key: string]: any;
-}
 
 function forEachFile(options: any, cb: any) {
   options = Object.assign(
@@ -27,8 +23,6 @@ function forEachFile(options: any, cb: any) {
       followLinks: options.followLinks
     });
 
-    console.log(walker);
-
     let i = 0;
 
     walker.on('errors', (root: any, nodeStatsArray: any, next: any) => {
@@ -37,12 +31,10 @@ function forEachFile(options: any, cb: any) {
     });
 
     walker.on('end', () => {
-      console.log('reached');
       resolve();
     });
 
     walker.on('file', (root: any, fileStats: any, next: any) => {
-      console.log(fileStats);
       const path = Path.resolve(root, fileStats.name);
       if (options.filter && !options.filter(path)) {
         return next();
@@ -96,21 +88,14 @@ async function parseJSON(json: any) {
   });
 }
 
-function parseNDJSON(ndjson: any, callback: any) {
-  return new Promise<void>(resolve => {
-    const lines = ndjson.trim().split(/\n/);
-    let length = lines.length;
-    function tick() {
-      if (length--) callback(lines.shift(), tick);
-      else resolve();
-    }
-    tick();
-  });
-}
-
 // Create DB
 function createDatabase(location: any) {
-  const DB: DBWithPromise = new sqlite3.Database(location);
+  const DB: DBWithPromise = new sqlite3.Database(location, err => {
+    if (err) {
+      return console.log(err.message);
+    }
+    console.log('Connected to SQLite database');
+  });
 
   /**
    * Calls database methods and returns a promise
@@ -131,22 +116,38 @@ function createDatabase(location: any) {
 
   return Promise.resolve()
     .then(() => DB.promise('run', 'DROP TABLE IF EXISTS "data"'))
-    .then(() =>
-      DB.promise(
+    .then(() => {
+      console.log('creating data table');
+      return DB.promise(
         'run',
         `CREATE TABLE "data"(
                 "fhir_type"     Text,
                 "resource_id"   Text PRIMARY KEY,
                 "resource_json" Text
             );`
-      )
-    )
+      );
+    })
+    .then(() => DB.promise('run', 'DROP TABLE IF EXISTS "local_references"'))
+    .then(() => {
+      console.log('creating local ref table');
+      DB.promise(
+        'run',
+        `CREATE TABLE "local_references"(
+          "reference_id" Text,
+          "reference_resource_type" Text,
+          "data_resource_id" Text,
+          FOREIGN KEY("data_resource_id") REFERENCES data("resource_id"),
+          PRIMARY KEY("data_resource_id", "reference_id", "reference_resource_type")
+        );`
+      );
+    })
     .then(() => DB);
 }
 
 function insertResourceIntoDB(line: any, DB: any) {
   return parseJSON(line)
-    .then((json: any) =>
+    .then((json: any) => {
+      const localRefsArray = getLocalReferences(json);
       DB.promise(
         'run',
         `INSERT INTO "data"("resource_id", "fhir_type", "resource_json")
@@ -154,8 +155,19 @@ function insertResourceIntoDB(line: any, DB: any) {
         json.id,
         json.resourceType,
         line
-      )
-    )
+      );
+      if (localRefsArray.length > 0) {
+        DB.promise(
+          'run',
+          `INSERT OR IGNORE INTO "local_references"("data_resource_id", "reference_resource_type", "reference_id")
+            VALUES ${Array(localRefsArray.length).fill('(?, ?, ?)').join(', ')};`,
+          ...localRefsArray.reduce((acc: string[], e) => {
+            acc.push(json.id, ...e.split('/'));
+            return acc;
+          }, [])
+        );
+      }
+    })
     .then(() => {
       insertedResources += 1;
     })
@@ -230,15 +242,36 @@ function checkReferences(db: any) {
   return prepare().then(statement => checkRowSet(statement));
 }
 
-export function populateDB(): void {
-  let DB: sqlite3.Database;
+/**
+ *
+ * @param fhirResource
+ * @return array of IDs for local references
+ */
+export function getLocalReferences(fhirResource: any): string[] {
+  const targetKey = 'reference';
+  const references: string[] = [];
+  if (typeof fhirResource !== 'object') {
+    return [];
+  }
+  Object.keys(fhirResource).forEach(key => {
+    if (key === targetKey) {
+      references.push(fhirResource[key]);
+    }
+    references.push(...getLocalReferences(fhirResource[key]));
+  });
+
+  return references;
+}
+
+export function populateDB(): DBWithPromise | void {
+  let DB: DBWithPromise;
   createDatabase('./database.db')
     .then(db => {
       DB = db;
       return new Promise((resolve, reject) => {
         const job = forEachFile(
           {
-            dir: './src/ndjsonDownloads',
+            dir: './src/ndjsonResources/real',
             filter: (path: string) => path.endsWith('.ndjson')
           },
           (path: string, fileStats: { name: any }, next: any): any => {
@@ -266,8 +299,7 @@ export function populateDB(): void {
       console.log('\nValidation complete');
       console.log(`${insertedResources} resources inserted in DB`);
       console.log(`${checkedReferences} references checked\n`);
+      return DB;
     })
     .catch(e => console.error(e.message || String(e)));
 }
-
-populateDB();
