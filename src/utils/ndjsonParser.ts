@@ -7,7 +7,13 @@ import { DBWithPromise } from '../types/DatabaseTypes';
 let insertedResources = 0;
 let checkedReferences = 0;
 
-function forEachFile(options: any, cb: any) {
+/**
+ *
+ * @param options object containing specified options to use for reading files
+ * @param cb
+ * @returns
+ */
+function forEachFile(options: any, cb: any): Promise<void> {
   options = Object.assign(
     {
       dir: '.',
@@ -134,10 +140,9 @@ function createDatabase(location: any) {
         'run',
         `CREATE TABLE "local_references"(
           "reference_id" Text,
-          "reference_resource_type" Text,
           "data_resource_id" Text,
           FOREIGN KEY("data_resource_id") REFERENCES data("resource_id"),
-          PRIMARY KEY("data_resource_id", "reference_id", "reference_resource_type")
+          PRIMARY KEY("data_resource_id", "reference_id")
         );`
       );
     })
@@ -159,10 +164,10 @@ function insertResourceIntoDB(line: any, DB: any) {
       if (localRefsArray.length > 0) {
         DB.promise(
           'run',
-          `INSERT OR IGNORE INTO "local_references"("data_resource_id", "reference_resource_type", "reference_id")
-            VALUES ${Array(localRefsArray.length).fill('(?, ?, ?)').join(', ')};`,
+          `INSERT OR IGNORE INTO "local_references"("data_resource_id", "reference_id")
+            VALUES ${Array(localRefsArray.length).fill('(?, ?)').join(', ')};`,
           ...localRefsArray.reduce((acc: string[], e) => {
-            acc.push(json.id, ...e.split('/'));
+            acc.push(json.id, e.split(/[\/:]+/).slice(-1)[0]);
             return acc;
           }, [])
         );
@@ -263,15 +268,15 @@ export function getLocalReferences(fhirResource: any): string[] {
   return references;
 }
 
-export function populateDB(): DBWithPromise | void {
+export function populateDB(): Promise<DBWithPromise> {
   let DB: DBWithPromise;
-  createDatabase('./database.db')
+  return createDatabase('./database.db')
     .then(db => {
       DB = db;
       return new Promise((resolve, reject) => {
         const job = forEachFile(
           {
-            dir: './src/ndjsonResources/real',
+            dir: './src/ndjsonResources/simple',
             filter: (path: string) => path.endsWith('.ndjson')
           },
           (path: string, fileStats: { name: any }, next: any): any => {
@@ -301,5 +306,8 @@ export function populateDB(): DBWithPromise | void {
       console.log(`${checkedReferences} references checked\n`);
       return DB;
     })
-    .catch(e => console.error(e.message || String(e)));
+    .catch(e => {
+      console.error(e.message || String(e));
+      return DB;
+    });
 }

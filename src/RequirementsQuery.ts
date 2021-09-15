@@ -3,7 +3,6 @@ import fs from 'fs';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
-import { retrieveNDJSON } from './utils/ndjsonRetriever';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const headers = {
   Accept: 'application/fhir+json',
