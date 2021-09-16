@@ -1,4 +1,4 @@
-class TransactionBundle implements fhir4.Bundle {
+export class TransactionBundle implements fhir4.Bundle {
   resourceType: 'Bundle';
   entry: fhir4.BundleEntry[];
   identifier?: fhir4.Identifier | undefined;
@@ -27,12 +27,18 @@ class TransactionBundle implements fhir4.Bundle {
     const request: fhir4.BundleEntryRequest = { method: 'POST', url: resource.resourceType };
 
     const newEntry: fhir4.BundleEntry = {
-      resource,
+      resource: { ...resource },
       request
     };
     this.entry = [...this.entry, newEntry];
   }
 
-  //Add this - step 6
-  toJSON() {}
+  //Add this - step 6 *Helpful*
+  toJSON() {
+    return {
+      resourceType: this.resourceType,
+      type: this.type,
+      entry: [...this.entry]
+    };
+  }
 }

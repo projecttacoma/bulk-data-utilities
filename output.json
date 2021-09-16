@@ -1,151 +1,426 @@
-[
-    {
-        "type": "Coverage",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.114222.4.11.3591"
-            }
-        ]
-    },
-    {
-        "type": "Procedure",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1010"
-            }
-        ]
-    },
-    {
-        "type": "Procedure",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1038"
-            }
-        ]
-    },
-    {
-        "type": "Procedure",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1019"
-            }
-        ]
-    },
-    {
-        "type": "Condition",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1001"
-            }
-        ]
-    },
-    {
-        "type": "Observation",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.198.12.1011"
-            }
-        ]
-    },
-    {
-        "type": "Observation",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1039"
-            }
-        ]
-    },
-    {
-        "type": "Procedure",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.108.12.1020"
-            }
-        ]
-    },
-    {
-        "type": "Encounter",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.666.5.307"
-            }
-        ]
-    },
-    {
-        "type": "ServiceRequest",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1108.15"
-            }
-        ]
-    },
-    {
-        "type": "Procedure",
-        "codeFilter": [
-            {
-                "path": "code",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113762.1.4.1108.15"
-            }
-        ]
-    },
-    {
-        "type": "Encounter",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1001"
-            }
-        ]
-    },
-    {
-        "type": "Encounter",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.526.3.1240"
-            }
-        ]
-    },
-    {
-        "type": "Encounter",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1025"
-            }
-        ]
-    },
-    {
-        "type": "Encounter",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1023"
-            }
-        ]
-    },
-    {
-        "type": "Encounter",
-        "codeFilter": [
-            {
-                "path": "type",
-                "valueSet": "http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1016"
-            }
-        ]
-    }
-]
-https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir/$export?_type=Coverage,Procedure,Condition,Observation,Encounter,ServiceRequest&_typeFilter=Coverage%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.114222.4.11.3591,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1010,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1038,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1019,Condition%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1001,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1011,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1039,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1020,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.666.5.307,ServiceRequest%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1001,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.526.3.1240,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1025,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1023,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1016
+Connected to SQLite database
+creating data table
+creating local ref table
+Inserting resources from Encounters.ndjson...
+Inserting resources from Patients.ndjson...
+Inserting resources from Practitioners.ndjson...
+Checking rows 0 to 100Checking rows 5 to 105
+Validation complete
+5 resources inserted in DB
+6 references checked
+
 {
-    "_type": "Coverage,Procedure,Condition,Observation,Encounter,ServiceRequest",
-    "_typeFilter": "Coverage%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.114222.4.11.3591,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1010,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1038,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1019,Condition%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1001,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.198.12.1011,Observation%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1039,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.108.12.1020,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.666.5.307,ServiceRequest%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Procedure%3Fcode%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113762.1.4.1108.15,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1001,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.526.3.1240,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1025,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1023,Encounter%3Ftype%3Ain=http%3A%2F%2Fcts.nlm.nih.gov%2Ffhir%2FValueSet%2F2.16.840.1.113883.3.464.1003.101.12.1016"
+    "resourceType": "Bundle",
+    "type": "transaction",
+    "entry": [
+        {
+            "resource": {
+                "resourceType": "Encounter",
+                "id": "06141f98-78bd-4197-b303-911575ea6239",
+                "status": "finished",
+                "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "AMB"
+                },
+                "type": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "424619006",
+                                "display": "Prenatal visit"
+                            }
+                        ],
+                        "text": "Prenatal visit"
+                    }
+                ],
+                "subject": {
+                    "reference": "Patient/a845ead4-d9de-42eb-b4b5-eb21a8963578"
+                },
+                "participant": [
+                    {
+                        "individual": {
+                            "reference": "Practitioner/d5c8ced6-a3c9-3014-8eb5-84c5835f48a7"
+                        }
+                    }
+                ],
+                "period": {
+                    "start": "2019-05-11T16:43:42-04:00",
+                    "end": "2019-05-11T18:13:42-04:00"
+                },
+                "reason": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "72892002",
+                                "display": "Normal pregnancy"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "request": {
+                "method": "POST",
+                "url": "Encounter"
+            }
+        },
+        {
+            "resource": {
+                "resourceType": "Encounter",
+                "id": "454fa4b1-3e22-4517-aaf0-61747709f243",
+                "status": "finished",
+                "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "AMB"
+                },
+                "type": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "424619006",
+                                "display": "Prenatal visit"
+                            }
+                        ],
+                        "text": "Prenatal visit"
+                    }
+                ],
+                "subject": {
+                    "reference": "Patient/a845ead4-d9de-42eb-b4b5-eb21a8963578"
+                },
+                "participant": [
+                    {
+                        "individual": {
+                            "reference": "Practitioner/d5c8ced6-a3c9-3014-8eb5-84c5835f48a7"
+                        }
+                    }
+                ],
+                "period": {
+                    "start": "2019-04-13T16:43:42-04:00",
+                    "end": "2019-04-13T17:28:42-04:00"
+                },
+                "reason": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "72892002",
+                                "display": "Normal pregnancy"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "request": {
+                "method": "POST",
+                "url": "Encounter"
+            }
+        },
+        {
+            "resource": {
+                "resourceType": "Encounter",
+                "id": "9f6649cc-e3aa-4cfe-ab91-d355df04babc",
+                "status": "finished",
+                "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "AMB"
+                },
+                "type": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "424619006",
+                                "display": "Prenatal visit"
+                            }
+                        ],
+                        "text": "Prenatal visit"
+                    }
+                ],
+                "subject": {
+                    "reference": "Patient/a845ead4-d9de-42eb-b4b5-eb21a8963578"
+                },
+                "participant": [
+                    {
+                        "individual": {
+                            "reference": "Practitioner/d5c8ced6-a3c9-3014-8eb5-84c5835f48a7"
+                        }
+                    }
+                ],
+                "period": {
+                    "start": "2019-06-08T16:43:42-04:00",
+                    "end": "2019-06-08T17:28:42-04:00"
+                },
+                "reason": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "72892002",
+                                "display": "Normal pregnancy"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "request": {
+                "method": "POST",
+                "url": "Encounter"
+            }
+        },
+        {
+            "resource": {
+                "resourceType": "Patient",
+                "id": "a845ead4-d9de-42eb-b4b5-eb21a8963578",
+                "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Generated by <a href=\"https://github.com/synthetichealth/synthea\">Synthea</a>.Version identifier: v2.5.0-385-ge50db853\n .   Person seed: 1870276488210015008  Population seed: 1588766244164</div>"
+                },
+                "extension": [
+                    {
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race",
+                        "extension": [
+                            {
+                                "url": "ombCategory",
+                                "valueCoding": {
+                                    "system": "urn:oid:2.16.840.1.113883.6.238",
+                                    "code": "2106-3",
+                                    "display": "White"
+                                }
+                            },
+                            {
+                                "url": "text",
+                                "valueString": "White"
+                            }
+                        ]
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+                        "extension": [
+                            {
+                                "url": "ombCategory",
+                                "valueCoding": {
+                                    "system": "urn:oid:2.16.840.1.113883.6.238",
+                                    "code": "2186-5",
+                                    "display": "Not Hispanic or Latino"
+                                }
+                            },
+                            {
+                                "url": "text",
+                                "valueString": "Not Hispanic or Latino"
+                            }
+                        ]
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName",
+                        "valueString": "Lanie Hyatt"
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex",
+                        "valueCode": "F"
+                    },
+                    {
+                        "url": "http://hl7.org/fhir/StructureDefinition/birthPlace",
+                        "valueAddress": {
+                            "city": "Millis",
+                            "state": "Massachusetts",
+                            "country": "US"
+                        }
+                    },
+                    {
+                        "url": "http://synthetichealth.github.io/synthea/disability-adjusted-life-years",
+                        "valueDecimal": 1.5908982035928143
+                    },
+                    {
+                        "url": "http://synthetichealth.github.io/synthea/quality-adjusted-life-years",
+                        "valueDecimal": 49.409101796407185
+                    }
+                ],
+                "identifier": [
+                    {
+                        "system": "https://github.com/synthetichealth/synthea",
+                        "value": "a845ead4-d9de-42eb-b4b5-eb21a8963578"
+                    },
+                    {
+                        "type": {
+                            "coding": [
+                                {
+                                    "system": "http://hl7.org/fhir/v2/0203",
+                                    "code": "MR",
+                                    "display": "Medical Record Number"
+                                }
+                            ],
+                            "text": "Medical Record Number"
+                        },
+                        "system": "http://hospital.smarthealthit.org",
+                        "value": "a845ead4-d9de-42eb-b4b5-eb21a8963578"
+                    },
+                    {
+                        "type": {
+                            "coding": [
+                                {
+                                    "system": "http://hl7.org/fhir/identifier-type",
+                                    "code": "SB",
+                                    "display": "Social Security Number"
+                                }
+                            ],
+                            "text": "Social Security Number"
+                        },
+                        "system": "http://hl7.org/fhir/sid/us-ssn",
+                        "value": "999-57-3633"
+                    },
+                    {
+                        "type": {
+                            "coding": [
+                                {
+                                    "system": "http://hl7.org/fhir/v2/0203",
+                                    "code": "DL",
+                                    "display": "Driver's License"
+                                }
+                            ],
+                            "text": "Driver's License"
+                        },
+                        "system": "urn:oid:2.16.840.1.113883.4.3.25",
+                        "value": "S99958454"
+                    },
+                    {
+                        "type": {
+                            "coding": [
+                                {
+                                    "system": "http://hl7.org/fhir/v2/0203",
+                                    "code": "PPN",
+                                    "display": "Passport Number"
+                                }
+                            ],
+                            "text": "Passport Number"
+                        },
+                        "system": "http://standardhealthrecord.org/fhir/StructureDefinition/passportNumber",
+                        "value": "X17800821X"
+                    }
+                ],
+                "name": [
+                    {
+                        "use": "official",
+                        "family": "Pagac",
+                        "given": [
+                            "Yi"
+                        ],
+                        "prefix": [
+                            "Ms."
+                        ]
+                    }
+                ],
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "value": "555-504-1379",
+                        "use": "home"
+                    }
+                ],
+                "gender": "female",
+                "birthDate": "1968-04-20",
+                "address": [
+                    {
+                        "extension": [
+                            {
+                                "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+                                "extension": [
+                                    {
+                                        "url": "latitude",
+                                        "valueDecimal": 42.05224964011243
+                                    },
+                                    {
+                                        "url": "longitude",
+                                        "valueDecimal": -72.29730507616054
+                                    }
+                                ]
+                            }
+                        ],
+                        "line": [
+                            "1072 Waelchi Lane Apt 91"
+                        ],
+                        "city": "Monson",
+                        "state": "Massachusetts",
+                        "country": "US"
+                    }
+                ],
+                "maritalStatus": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/v3/MaritalStatus",
+                            "code": "S",
+                            "display": "S"
+                        }
+                    ],
+                    "text": "S"
+                },
+                "multipleBirthBoolean": false,
+                "communication": [
+                    {
+                        "language": {
+                            "coding": [
+                                {
+                                    "system": "urn:ietf:bcp:47",
+                                    "code": "en-US",
+                                    "display": "English"
+                                }
+                            ],
+                            "text": "English"
+                        }
+                    }
+                ]
+            },
+            "request": {
+                "method": "POST",
+                "url": "Patient"
+            }
+        },
+        {
+            "resource": {
+                "resourceType": "Practitioner",
+                "id": "d5c8ced6-a3c9-3014-8eb5-84c5835f48a7",
+                "extension": [
+                    {
+                        "url": "http://synthetichealth.github.io/synthea/utilization-encounters-extension",
+                        "valueInteger": 27
+                    }
+                ],
+                "identifier": [
+                    {
+                        "system": "http://hl7.org/fhir/sid/us-npi",
+                        "value": "0"
+                    }
+                ],
+                "active": true,
+                "name": [
+                    {
+                        "family": "Christiansen",
+                        "given": [
+                            "Darlena"
+                        ],
+                        "prefix": [
+                            "Dr."
+                        ]
+                    }
+                ],
+                "address": [
+                    {
+                        "line": [
+                            "60 HOSPITAL ROAD"
+                        ],
+                        "city": "LEOMINSTER",
+                        "state": "MA",
+                        "postalCode": "01453",
+                        "country": "US"
+                    }
+                ],
+                "gender": "female"
+            },
+            "request": {
+                "method": "POST",
+                "url": "Practitioner"
+            }
+        }
+    ]
 }

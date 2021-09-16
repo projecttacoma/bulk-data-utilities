@@ -7,6 +7,7 @@
     "build/*"
   ],
   "dependencies": {
+    "@databases/sqlite": "^3.0.0",
     "axios": "^0.21.1",
     "fqm-execution": "^0.8.0",
     "fs": "0.0.1-security",

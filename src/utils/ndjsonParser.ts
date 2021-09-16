@@ -121,12 +121,11 @@ function createDatabase(location: any) {
   };
 
   return Promise.resolve()
-    .then(() => DB.promise('run', 'DROP TABLE IF EXISTS "data"'))
+    .then(() => DB.promise('run', 'DROP TABLE IF EXISTS "fhir_resources"'))
     .then(() => {
-      console.log('creating data table');
       return DB.promise(
         'run',
-        `CREATE TABLE "data"(
+        `CREATE TABLE "fhir_resources"(
                 "fhir_type"     Text,
                 "resource_id"   Text PRIMARY KEY,
                 "resource_json" Text
@@ -140,9 +139,9 @@ function createDatabase(location: any) {
         'run',
         `CREATE TABLE "local_references"(
           "reference_id" Text,
-          "data_resource_id" Text,
-          FOREIGN KEY("data_resource_id") REFERENCES data("resource_id"),
-          PRIMARY KEY("data_resource_id", "reference_id")
+          "origin_resource_id" Text,
+          FOREIGN KEY("origin_resource_id") REFERENCES fhir_resources("resource_id"),
+          PRIMARY KEY("origin_resource_id", "reference_id")
         );`
       );
     })
@@ -155,7 +154,7 @@ function insertResourceIntoDB(line: any, DB: any) {
       const localRefsArray = getLocalReferences(json);
       DB.promise(
         'run',
-        `INSERT INTO "data"("resource_id", "fhir_type", "resource_json")
+        `INSERT INTO "fhir_resources"("resource_id", "fhir_type", "resource_json")
             VALUES (?, ?, ?)`,
         json.id,
         json.resourceType,
@@ -164,17 +163,17 @@ function insertResourceIntoDB(line: any, DB: any) {
       if (localRefsArray.length > 0) {
         DB.promise(
           'run',
-          `INSERT OR IGNORE INTO "local_references"("data_resource_id", "reference_id")
+          `INSERT OR IGNORE INTO "local_references"("origin_resource_id", "reference_id")
             VALUES ${Array(localRefsArray.length).fill('(?, ?)').join(', ')};`,
           ...localRefsArray.reduce((acc: string[], e) => {
-            acc.push(json.id, e.split(/[\/:]+/).slice(-1)[0]);
+            acc.push(json.id, e.split(/[\/:]+/).slice(-1)[0]); //Add a comment here
             return acc;
           }, [])
         );
       }
     })
     .then(() => {
-      insertedResources += 1;
+      insertedResources += 1; //We need to update this. No longer accurate (insertions for refs table)
     })
     .catch(e => {
       console.log('==========================');
@@ -193,12 +192,16 @@ function checkReferences(db: any) {
 
   function prepare() {
     return new Promise((resolve, reject) => {
-      const statement = db.prepare('SELECT * FROM "data" LIMIT $limit OFFSET $offset', params, (prepareError: any) => {
-        if (prepareError) {
-          return reject(prepareError);
+      const statement = db.prepare(
+        'SELECT * FROM "fhir_resources" LIMIT $limit OFFSET $offset',
+        params,
+        (prepareError: any) => {
+          if (prepareError) {
+            return reject(prepareError);
+          }
+          resolve(statement);
         }
-        resolve(statement);
-      });
+      );
     });
   }
 
@@ -218,7 +221,12 @@ function checkReferences(db: any) {
     row.resource_json.replace(/"reference":"(.*?)\/(.*?)"/gi, function (_: any, resourceType: any, resourceId: any) {
       job = job
         .then(() =>
-          db.promise('get', 'SELECT * FROM "data" WHERE "fhir_type" = ? AND resource_id = ?', resourceType, resourceId)
+          db.promise(
+            'get',
+            'SELECT * FROM "fhir_resources" WHERE "fhir_type" = ? AND resource_id = ?',
+            resourceType,
+            resourceId
+          )
         )
         .then(result => {
           if (!result) {
@@ -268,7 +276,7 @@ export function getLocalReferences(fhirResource: any): string[] {
   return references;
 }
 
-export function populateDB(): Promise<DBWithPromise> {
+export function populateDB(ndjsonDirectory: string): Promise<DBWithPromise> {
   let DB: DBWithPromise;
   return createDatabase('./database.db')
     .then(db => {
@@ -276,7 +284,7 @@ export function populateDB(): Promise<DBWithPromise> {
       return new Promise((resolve, reject) => {
         const job = forEachFile(
           {
-            dir: './src/ndjsonResources/simple',
+            dir: ndjsonDirectory,
             filter: (path: string) => path.endsWith('.ndjson')
           },
           (path: string, fileStats: { name: any }, next: any): any => {
