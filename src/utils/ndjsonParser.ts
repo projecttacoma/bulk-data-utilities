@@ -3,9 +3,10 @@ import * as Walker from 'walk';
 import * as FS from 'fs';
 import * as Path from 'path';
 import { DBWithPromise } from '../types/DatabaseTypes';
+// wrapper around sqlite3 that is promise-based
+import { open } from 'sqlite';
 
 let insertedResources = 0;
-let checkedReferences = 0;
 
 /**
  *
@@ -75,34 +76,20 @@ async function readFile(path: string, options: string | null = null) {
  * 1. Returns a promise
  * 2. Ensures async result
  * 3. Catches errors and rejects the promise
- * @param {String} json The JSON input string
- * @return {Promise<Object>} Promises an object
+ * @param json The JSON input string
+ * @return Promises an object
  * @todo Investigate if we can drop the try/catch block and rely on the built-in
  *       error catching.
  */
-async function parseJSON(json: any) {
-  return new Promise((resolve, reject) => {
-    setImmediate(() => {
-      let out;
-      try {
-        out = JSON.parse(json);
-      } catch (error) {
-        return reject(error);
-      }
-      resolve(out);
-    });
-  });
-}
 
 // Create DB
-function createDatabase(location: any) {
-  const DB: DBWithPromise = new sqlite3.Database(location, err => {
-    if (err) {
-      return console.log(err.message);
-    }
-    console.log('Connected to SQLite database');
+async function createDatabase(location: any): Promise<DBWithPromise> {
+  const DB: DBWithPromise = await open({
+    filename: './database.db',
+    driver: sqlite3.Database
   });
 
+  // delete this eventually if we can fix everything
   /**
    * Calls database methods and returns a promise
    * @param {String} method
@@ -120,143 +107,166 @@ function createDatabase(location: any) {
     });
   };
 
-  return Promise.resolve()
-    .then(() => DB.promise('run', 'DROP TABLE IF EXISTS "fhir_resources"'))
-    .then(() => {
-      return DB.promise(
-        'run',
-        `CREATE TABLE "fhir_resources"(
-                "fhir_type"     Text,
-                "resource_id"   Text PRIMARY KEY,
-                "resource_json" Text
-            );`
-      );
-    })
-    .then(() => DB.promise('run', 'DROP TABLE IF EXISTS "local_references"'))
-    .then(() => {
-      console.log('creating local ref table');
-      DB.promise(
-        'run',
-        `CREATE TABLE "local_references"(
-          "reference_id" Text,
-          "origin_resource_id" Text,
-          FOREIGN KEY("origin_resource_id") REFERENCES fhir_resources("resource_id"),
-          PRIMARY KEY("origin_resource_id", "reference_id")
+  await DB.run('DROP TABLE IF EXISTS "fhir_resources"');
+  await DB.run(
+    `CREATE TABLE "fhir_resources"(
+            "fhir_type"     Text,
+            "resource_id"   Text PRIMARY KEY,
+            "resource_json" Text
         );`
-      );
-    })
-    .then(() => DB);
+  );
+  await DB.run('DROP TABLE IF EXISTS "local_references"');
+  await DB.run(
+    `CREATE TABLE "local_references"(
+        "reference_id" Text,
+        "origin_resource_id" Text,
+        FOREIGN KEY("origin_resource_id") REFERENCES fhir_resources("resource_id"),
+        PRIMARY KEY("origin_resource_id", "reference_id")
+      );`
+  );
+  return DB;
 }
 
-function insertResourceIntoDB(line: any, DB: any) {
-  return parseJSON(line)
-    .then((json: any) => {
-      const localRefsArray = getLocalReferences(json);
-      DB.promise(
-        'run',
-        `INSERT INTO "fhir_resources"("resource_id", "fhir_type", "resource_json")
-            VALUES (?, ?, ?)`,
-        json.id,
-        json.resourceType,
-        line
-      );
-      if (localRefsArray.length > 0) {
-        DB.promise(
-          'run',
-          `INSERT OR IGNORE INTO "local_references"("origin_resource_id", "reference_id")
-            VALUES ${Array(localRefsArray.length).fill('(?, ?)').join(', ')};`,
-          ...localRefsArray.reduce((acc: string[], e) => {
-            acc.push(json.id, e.split(/[\/:]+/).slice(-1)[0]); //Add a comment here
-            return acc;
-          }, [])
-        );
-      }
-    })
-    .then(() => {
-      insertedResources += 1; //We need to update this. No longer accurate (insertions for refs table)
-    })
-    .catch(e => {
-      console.log('==========================');
-      console.log(line);
-      console.log(e);
-      console.log('==========================');
-      throw e;
-    });
+/**
+ *
+ * @param line
+ * @param DB
+ */
+async function insertResourceIntoDB(line: any, DB: DBWithPromise): Promise<void> {
+  const json = JSON.parse(line);
+  const localRefsArray = getLocalReferences(json);
+  await DB.run(
+    `INSERT INTO "fhir_resources"("resource_id", "fhir_type", "resource_json")
+        VALUES (?, ?, ?)`,
+    json.id,
+    json.resourceType,
+    line
+  );
+  if (localRefsArray.length > 0) {
+    await DB.run(
+      `INSERT OR IGNORE INTO "local_references"("origin_resource_id", "reference_id")
+        VALUES ${Array(localRefsArray.length).fill('(?, ?)').join(', ')};`,
+      ...localRefsArray.reduce((acc: string[], e) => {
+        acc.push(json.id, e.split(/[\/:]+/).slice(-1)[0]); //Regex splits string on : or /
+        return acc;
+      }, [])
+    );
+  }
+
+  insertedResources += 1; //We need to update this. No longer accurate (insertions for refs table)
 }
 
-function checkReferences(db: any) {
+/**
+ *
+ * @param db
+ */
+async function checkReferences(db: DBWithPromise): Promise<void> {
   const params = {
     $limit: 100,
     $offset: 0
   };
 
-  function prepare() {
-    return new Promise((resolve, reject) => {
-      const statement = db.prepare(
-        'SELECT * FROM "fhir_resources" LIMIT $limit OFFSET $offset',
-        params,
-        (prepareError: any) => {
-          if (prepareError) {
-            return reject(prepareError);
-          }
-          resolve(statement);
-        }
-      );
-    });
-  }
+  const getRowSet = async () => await db.all('SELECT * FROM "fhir_resources" LIMIT $limit OFFSET $offset', params);
 
-  function getRows(statement: any) {
-    return new Promise((resolve, reject) => {
-      statement.all(params, (err: any, rows: any) => {
-        if (err) {
-          return reject(err);
+  //This will need to change for urn:uuid refs
+  const checkRow = async (row: { resource_json: string; fhir_type: string; resource_id: string }): Promise<void> => {
+    const references: string[] | null = row.resource_json.match(/"reference":"(.*?)\/(.*?)"/gi);
+    if (references) {
+      references.map(async (ref: string) => {
+        const [resourceType, resourceId] = ref.split('/');
+        const foundRef = await db.get('SELECT * FROM "fhir_resources" WHERE resource_id = ?', resourceId);
+
+        if (!foundRef) {
+          throw new Error(
+            `Unresolved reference from ${row.fhir_type}/${row.resource_id} to ${resourceType}/${resourceId}`
+          );
         }
-        resolve(rows);
+        await Promise.all(references);
       });
-    });
-  }
+    }
+  };
 
-  function checkRow(row: { resource_json: any; fhir_type: any; resource_id: any }) {
-    let job = Promise.resolve();
-    row.resource_json.replace(/"reference":"(.*?)\/(.*?)"/gi, function (_: any, resourceType: any, resourceId: any) {
-      job = job
-        .then(() =>
-          db.promise(
-            'get',
-            'SELECT * FROM "fhir_resources" WHERE "fhir_type" = ? AND resource_id = ?',
-            resourceType,
-            resourceId
-          )
-        )
-        .then(result => {
-          if (!result) {
-            throw new Error(
-              `Unresolved reference from ${row.fhir_type}/${row.resource_id} to ${resourceType}/${resourceId}`
-            );
-          }
-          checkedReferences += 1;
-        });
-    });
-    return job;
-  }
-
-  function checkRowSet(statement: any): any {
-    return getRows(statement).then((rowSet: any) => {
-      process.stdout.write('Checking rows ' + params.$offset + ' to ' + (params.$offset + params.$limit));
-      if (rowSet.length) {
-        return Promise.all(rowSet.map(checkRow)).then(() => {
-          params.$offset += rowSet.length;
-          return checkRowSet(statement);
-        });
-      }
-    });
-  }
-
-  return prepare().then(statement => checkRowSet(statement));
+  const checkRowSet: any = async (): Promise<void> => {
+    const rowSet = await getRowSet();
+    if (rowSet.length) {
+      await Promise.all(rowSet.map(checkRow));
+      params.$offset += rowSet.length;
+      checkRowSet();
+    }
+  };
 }
+//   function checkRowSet(statement: any): any {
+//     return getRows(statement).then((rowSet: any) => {
+//       process.stdout.write('Checking rows ' + params.$offset + ' to ' + (params.$offset + params.$limit));
+//       if (rowSet.length) {
+//         return Promise.all(rowSet.map(checkRow)).then(() => {
+//           params.$offset += rowSet.length;
+//           return checkRowSet(statement);
+//         });
+//       }
+//     });
+//   }
+
+//   return prepare().then(statement => checkRowSet(statement));
+// }
+
+//   function checkRow(row: { resource_json: any; fhir_type: any; resource_id: any }) {
+//     let job = Promise.resolve();
+//     row.resource_json.replace(/"reference":"(.*?)\/(.*?)"/gi, function (_: any, resourceType: any, resourceId: any) {
+//       job = job
+//         .then(() =>
+//           db.promise(
+//             'get',
+//             'SELECT * FROM "fhir_resources" WHERE "fhir_type" = ? AND resource_id = ?',
+//             resourceType,
+//             resourceId
+//           )
+//         )
+//         .then(result => {
+//           if (!result) {
+//
+//           }
+//           checkedReferences += 1;
+//         });
+//     });
+//     return job;
+//   }
+
+// function checkReferences(db: any) {
+//   const params = {
+//     $limit: 100,
+//     $offset: 0
+//   };
+
+//   function prepare() {
+//     return new Promise((resolve, reject) => {
+//       const statement = db.prepare(
+//         'SELECT * FROM "fhir_resources" LIMIT $limit OFFSET $offset',
+//         params,
+//         (prepareError: any) => {
+//           if (prepareError) {
+//             return reject(prepareError);
+//           }
+//           resolve(statement);
+//         }
+//       );
+//     });
+//   }
+
+//   function getRows(statement: any) {
+//     return new Promise((resolve, reject) => {
+//       statement.all(params, (err: any, rows: any) => {
+//         if (err) {
+//           return reject(err);
+//         }
+//         resolve(rows);
+//       });
+//     });
+//   }
 
 /**
- *
+ * Gets all references from fhir object. must be recursive since we
+ * don't know what level the reference will occur at and we need them all
  * @param fhirResource
  * @return array of IDs for local references
  */
@@ -276,46 +286,32 @@ export function getLocalReferences(fhirResource: any): string[] {
   return references;
 }
 
-export function populateDB(ndjsonDirectory: string): Promise<DBWithPromise> {
-  let DB: DBWithPromise;
-  return createDatabase('./database.db')
-    .then(db => {
-      DB = db;
-      return new Promise((resolve, reject) => {
-        const job = forEachFile(
-          {
-            dir: ndjsonDirectory,
-            filter: (path: string) => path.endsWith('.ndjson')
-          },
-          (path: string, fileStats: { name: any }, next: any): any => {
-            readFile(path, 'utf8')
-              .then((lines: any) => {
-                console.log(`Inserting resources from ${fileStats.name}...`);
-                return Promise.all(
-                  lines
-                    .trim()
-                    .split(/\n/)
-                    .map((line: any) => {
-                      return insertResourceIntoDB(line, DB);
-                    })
-                );
-              })
-              .then(next);
-          }
-        );
+export async function populateDB(ndjsonDirectory: string): Promise<DBWithPromise> {
+  const DB: DBWithPromise = await createDatabase('./database.db');
+  forEachFile(
+    {
+      dir: ndjsonDirectory,
+      filter: (path: string) => path.endsWith('.ndjson')
+    },
+    async (path: string, fileStats: { name: any }, next: any): Promise<any> => {
+      let lines = '';
+      //this is not returning the lines varibale the way we want it. possibly async issues? promise?
+      await FS.readFile(path, 'utf8', (err, buf) => (lines = buf));
+      console.log(lines);
+      if (lines) {
+        console.log(`Inserting resources from ${fileStats.name}...`);
+        const promises = lines
+          .trim()
+          .split(/\n/)
+          .map(async (line: any) => await insertResourceIntoDB(line, DB));
+        await Promise.all(promises);
+      }
+    }
+  );
 
-        resolve(job);
-      });
-    })
-    .then(() => checkReferences(DB))
-    .then(() => {
-      console.log('\nValidation complete');
-      console.log(`${insertedResources} resources inserted in DB`);
-      console.log(`${checkedReferences} references checked\n`);
-      return DB;
-    })
-    .catch(e => {
-      console.error(e.message || String(e));
-      return DB;
-    });
+  await checkReferences(DB);
+  console.log('\nValidation complete');
+  console.log(`${insertedResources} resources inserted in DB`);
+  //console.log(`${checkedReferences} references checked\n`);
+  return DB;
 }

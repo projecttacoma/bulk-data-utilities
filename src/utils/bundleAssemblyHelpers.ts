@@ -128,4 +128,4 @@ async function AssembleTransactionBundle(ndjsonDirectory: string): Promise<Trans
   // referenced resources
   return createTransactionBundle(DB, resourceIds);
 }
-AssembleTransactionBundle();
+AssembleTransactionBundle('src/ndjsonResources/simple');
