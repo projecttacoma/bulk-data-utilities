@@ -2,9 +2,8 @@ import * as sqlite3 from 'sqlite3';
 import * as Walker from 'walk';
 import * as FS from 'fs';
 import * as Path from 'path';
-import { DBWithPromise } from '../types/DatabaseTypes';
 // wrapper around sqlite3 that is promise-based
-import { open } from 'sqlite';
+import * as sqlite from 'sqlite';
 
 let insertedResources = 0;
 
@@ -54,58 +53,12 @@ function forEachFile(options: any, cb: any): Promise<void> {
   });
 }
 
-/**
- * Promisified version of readFile
- * @param {String} path
- * @param {Object} options
- */
-async function readFile(path: string, options: string | null = null) {
-  return new Promise((resolve, reject) => {
-    FS.readFile(path, options, (error, result) => {
-      if (error) {
-        return reject(error);
-      }
-      resolve(result);
-    });
-  });
-}
-
-/**
- * Parses the given json string into a JSON object. Internally it uses the
- * JSON.parse() method but adds three things to it:
- * 1. Returns a promise
- * 2. Ensures async result
- * 3. Catches errors and rejects the promise
- * @param json The JSON input string
- * @return Promises an object
- * @todo Investigate if we can drop the try/catch block and rely on the built-in
- *       error catching.
- */
-
 // Create DB
-async function createDatabase(location: any): Promise<DBWithPromise> {
-  const DB: DBWithPromise = await open({
-    filename: './database.db',
+export async function createDatabase(location: string): Promise<sqlite.Database> {
+  const DB = await sqlite.open({
+    filename: location,
     driver: sqlite3.Database
   });
-
-  // delete this eventually if we can fix everything
-  /**
-   * Calls database methods and returns a promise
-   * @param {String} method
-   * @param {[*]} args
-   */
-  DB.promise = (...args: any[]) => {
-    const [method, ...params] = args;
-    return new Promise((resolve, reject) => {
-      DB[method](...params, (error: any, result: any) => {
-        if (error) {
-          return reject(error);
-        }
-        resolve(result);
-      });
-    });
-  };
 
   await DB.run('DROP TABLE IF EXISTS "fhir_resources"');
   await DB.run(
@@ -132,7 +85,7 @@ async function createDatabase(location: any): Promise<DBWithPromise> {
  * @param line
  * @param DB
  */
-async function insertResourceIntoDB(line: any, DB: DBWithPromise): Promise<void> {
+export async function insertResourceIntoDB(DB: sqlite.Database, line: string): Promise<void> {
   const json = JSON.parse(line);
   const localRefsArray = getLocalReferences(json);
   await DB.run(
@@ -152,7 +105,6 @@ async function insertResourceIntoDB(line: any, DB: DBWithPromise): Promise<void>
       }, [])
     );
   }
-
   insertedResources += 1; //We need to update this. No longer accurate (insertions for refs table)
 }
 
@@ -160,7 +112,7 @@ async function insertResourceIntoDB(line: any, DB: DBWithPromise): Promise<void>
  *
  * @param db
  */
-async function checkReferences(db: DBWithPromise): Promise<void> {
+export async function checkReferences(db: sqlite.Database): Promise<void> {
   const params = {
     $limit: 100,
     $offset: 0
@@ -170,18 +122,24 @@ async function checkReferences(db: DBWithPromise): Promise<void> {
 
   //This will need to change for urn:uuid refs
   const checkRow = async (row: { resource_json: string; fhir_type: string; resource_id: string }): Promise<void> => {
-    const references: string[] | null = row.resource_json.match(/"reference":"(.*?)\/(.*?)"/gi);
+    //Chec if this regex is correct. Will all resources be uploaded in this format?
+    const references = Array.from(row.resource_json.matchAll(new RegExp(/"reference":"(.*?)\/(.*?)"/gi)), m => [
+      m[1],
+      m[2]
+    ]);
     if (references) {
-      references.map(async (ref: string) => {
-        const [resourceType, resourceId] = ref.split('/');
-        const foundRef = await db.get('SELECT * FROM "fhir_resources" WHERE resource_id = ?', resourceId);
+      references.map(async (ref: string[]) => {
+        const [referenceType, referenceId] = ref;
+
+        const foundRef = await db.get('SELECT * FROM "fhir_resources" WHERE resource_id = ?', referenceId);
 
         if (!foundRef) {
+          console.log('reached');
           throw new Error(
-            `Unresolved reference from ${row.fhir_type}/${row.resource_id} to ${resourceType}/${resourceId}`
+            `Unresolved reference from ${row.fhir_type}/${row.resource_id} to ${referenceType}/${referenceId}`
           );
         }
-        await Promise.all(references);
+        return await Promise.all(references);
       });
     }
   };
@@ -189,80 +147,15 @@ async function checkReferences(db: DBWithPromise): Promise<void> {
   const checkRowSet: any = async (): Promise<void> => {
     const rowSet = await getRowSet();
     if (rowSet.length) {
-      await Promise.all(rowSet.map(checkRow));
+      await Promise.all(rowSet.map(checkRow)).catch(e => {
+        throw new Error(e);
+      });
       params.$offset += rowSet.length;
-      checkRowSet();
+      await checkRowSet();
     }
   };
+  return await checkRowSet();
 }
-//   function checkRowSet(statement: any): any {
-//     return getRows(statement).then((rowSet: any) => {
-//       process.stdout.write('Checking rows ' + params.$offset + ' to ' + (params.$offset + params.$limit));
-//       if (rowSet.length) {
-//         return Promise.all(rowSet.map(checkRow)).then(() => {
-//           params.$offset += rowSet.length;
-//           return checkRowSet(statement);
-//         });
-//       }
-//     });
-//   }
-
-//   return prepare().then(statement => checkRowSet(statement));
-// }
-
-//   function checkRow(row: { resource_json: any; fhir_type: any; resource_id: any }) {
-//     let job = Promise.resolve();
-//     row.resource_json.replace(/"reference":"(.*?)\/(.*?)"/gi, function (_: any, resourceType: any, resourceId: any) {
-//       job = job
-//         .then(() =>
-//           db.promise(
-//             'get',
-//             'SELECT * FROM "fhir_resources" WHERE "fhir_type" = ? AND resource_id = ?',
-//             resourceType,
-//             resourceId
-//           )
-//         )
-//         .then(result => {
-//           if (!result) {
-//
-//           }
-//           checkedReferences += 1;
-//         });
-//     });
-//     return job;
-//   }
-
-// function checkReferences(db: any) {
-//   const params = {
-//     $limit: 100,
-//     $offset: 0
-//   };
-
-//   function prepare() {
-//     return new Promise((resolve, reject) => {
-//       const statement = db.prepare(
-//         'SELECT * FROM "fhir_resources" LIMIT $limit OFFSET $offset',
-//         params,
-//         (prepareError: any) => {
-//           if (prepareError) {
-//             return reject(prepareError);
-//           }
-//           resolve(statement);
-//         }
-//       );
-//     });
-//   }
-
-//   function getRows(statement: any) {
-//     return new Promise((resolve, reject) => {
-//       statement.all(params, (err: any, rows: any) => {
-//         if (err) {
-//           return reject(err);
-//         }
-//         resolve(rows);
-//       });
-//     });
-//   }
 
 /**
  * Gets all references from fhir object. must be recursive since we
@@ -286,25 +179,23 @@ export function getLocalReferences(fhirResource: any): string[] {
   return references;
 }
 
-export async function populateDB(ndjsonDirectory: string): Promise<DBWithPromise> {
-  const DB: DBWithPromise = await createDatabase('./database.db');
-  forEachFile(
+export async function populateDB(ndjsonDirectory: string, location: string): Promise<sqlite.Database> {
+  const DB: sqlite.Database = await createDatabase(location);
+  await forEachFile(
     {
       dir: ndjsonDirectory,
       filter: (path: string) => path.endsWith('.ndjson')
     },
-    async (path: string, fileStats: { name: any }, next: any): Promise<any> => {
-      let lines = '';
-      //this is not returning the lines varibale the way we want it. possibly async issues? promise?
-      await FS.readFile(path, 'utf8', (err, buf) => (lines = buf));
-      console.log(lines);
+    async (path: string, fileStats: { name: any }, next: any): Promise<void> => {
+      const lines = FS.readFileSync(path, 'utf8');
       if (lines) {
         console.log(`Inserting resources from ${fileStats.name}...`);
         const promises = lines
           .trim()
           .split(/\n/)
-          .map(async (line: any) => await insertResourceIntoDB(line, DB));
+          .map(async (line: string) => await insertResourceIntoDB(DB, line));
         await Promise.all(promises);
+        next();
       }
     }
   );
@@ -312,6 +203,5 @@ export async function populateDB(ndjsonDirectory: string): Promise<DBWithPromise
   await checkReferences(DB);
   console.log('\nValidation complete');
   console.log(`${insertedResources} resources inserted in DB`);
-  //console.log(`${checkedReferences} references checked\n`);
   return DB;
 }

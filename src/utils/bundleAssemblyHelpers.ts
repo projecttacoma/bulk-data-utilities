@@ -1,14 +1,14 @@
 import * as ndjsonParser from './ndjsonParser';
-import { DBWithPromise } from '../types/DatabaseTypes';
 import { TransactionBundle } from '../types/TransactionBundle';
+import * as sqlite from 'sqlite';
 
 /**
  * Uses SQL query to retrieve all the Patient resource ids from the data table in our database
  * @param DB database object
  * @returns an array containing resource_id, wrapped in an object, for each patient
  */
-export async function getAllPatientIds(DB: DBWithPromise): Promise<{ resource_id: string }[]> {
-  return await DB.promise('all', 'SELECT resource_id FROM "fhir_resources" WHERE fhir_type = "Patient"');
+export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
+  return await DB.all('SELECT resource_id FROM "fhir_resources" WHERE fhir_type = "Patient"');
 }
 
 /**
@@ -19,10 +19,10 @@ export async function getAllPatientIds(DB: DBWithPromise): Promise<{ resource_id
  * @returns an array of all resource_ids wrapped in objects for resources that reference the passed in patientId
  */
 export async function getReferencesToPatient(
-  DB: DBWithPromise,
+  DB: sqlite.Database,
   patientId: string
 ): Promise<{ origin_resource_id: string }[]> {
-  return await DB.promise('all', 'SELECT origin_resource_id FROM "local_references" WHERE reference_id = ?', patientId);
+  return await DB.all('SELECT origin_resource_id FROM "local_references" WHERE reference_id = ?', patientId);
 }
 
 /**
@@ -33,14 +33,10 @@ export async function getReferencesToPatient(
  * for each resource referenced by the resource with the passed in resourceId
  */
 export async function getResourcesReferenced(
-  DB: DBWithPromise,
+  DB: sqlite.Database,
   resourceId: string
 ): Promise<{ reference_id: string }[]> {
-  return await DB.promise(
-    'all',
-    'SELECT reference_id FROM "local_references"  WHERE origin_resource_id = ?',
-    resourceId
-  );
+  return await DB.all('SELECT reference_id FROM "local_references"  WHERE origin_resource_id = ?', resourceId);
 }
 
 /**
@@ -53,7 +49,7 @@ export async function getResourcesReferenced(
  * by the resource with the passed in resource id
  */
 export async function getRecursiveReferences(
-  DB: DBWithPromise,
+  DB: sqlite.Database,
   resourceId: string,
   explored: Set<string>
 ): Promise<string[]> {
@@ -80,11 +76,10 @@ export async function getRecursiveReferences(
  * @param resourceIds - Ids for resources that reference patient and resources that
  * those resources reference
  */
-export async function createTransactionBundle(DB: DBWithPromise, resourceIds: string[]): Promise<TransactionBundle> {
+export async function createTransactionBundle(DB: sqlite.Database, resourceIds: string[]): Promise<TransactionBundle> {
   const tb = new TransactionBundle();
   // get data for each resource from the database
-  const resourceJSONs = await DB.promise(
-    'all',
+  const resourceJSONs = await DB.all(
     `SELECT resource_json FROM "fhir_resources" WHERE resource_id IN (${Array(resourceIds.length)
       .fill('?')
       .join(', ')})`,
@@ -102,8 +97,8 @@ export async function createTransactionBundle(DB: DBWithPromise, resourceIds: st
  * @returns TransactionBundle promise that can be uploaded to test
  * server
  */
-async function AssembleTransactionBundle(ndjsonDirectory: string): Promise<TransactionBundle> {
-  const DB = await ndjsonParser.populateDB(ndjsonDirectory);
+export async function assembleTransactionBundle(ndjsonDirectory: string, location: string): Promise<TransactionBundle> {
+  const DB = await ndjsonParser.populateDB(ndjsonDirectory, location);
   // get all patient Ids from database
   const patientIds = await getAllPatientIds(DB);
   // array for resources that reference patient and resources that
@@ -128,4 +123,7 @@ async function AssembleTransactionBundle(ndjsonDirectory: string): Promise<Trans
   // referenced resources
   return createTransactionBundle(DB, resourceIds);
 }
-AssembleTransactionBundle('src/ndjsonResources/simple');
+// assembleTransactionBundle('src/ndjsonResources/simple', './database.db').then(bundle =>
+//   console.log(JSON.stringify(bundle, null, 4))
+// );
+//assembleTransactionBundle('test/testFiles', ':memory:').then(bundle => console.log(JSON.stringify(bundle, null, 4)));
