@@ -131,4 +131,6 @@ export async function assembleTransactionBundle(ndjsonDirectory: string, locatio
   // referenced resources
   return createTransactionBundle(DB, resourceIds);
 }
-assembleTransactionBundle('src/ndjsonResources/simple', './database.db');
+// assembleTransactionBundle('src/ndjsonResources/simple', './database.db').then(bundle =>
+//   console.log(JSON.stringify(bundle, null, 4))
+// );
