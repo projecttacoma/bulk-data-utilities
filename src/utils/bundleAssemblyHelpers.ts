@@ -3,20 +3,23 @@ import { TransactionBundle } from '../types/TransactionBundle';
 import * as sqlite from 'sqlite';
 
 /**
- * Uses SQL query to retrieve all the Patient resource ids from the data table in our database
- * @param DB database object
- * @returns an array containing resource_id, wrapped in an object, for each patient
+ * Uses SQL query to retrieve all the Patient resource ids from the fhir resource
+ * table in our database
+ * @param DB sqlite database object
+ * @returns an array containing resource_id, wrapped in an object, for each patient in
+ * the fhir resource table
  */
 export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
   return await DB.all('SELECT resource_id FROM "fhir_resources" WHERE fhir_type = "Patient"');
 }
 
 /**
- * Uses SQL query to retrieve all the resources in the data table that reference the
- * given patient
- * @param DB database object
+ * Uses SQL query to retrieve all the resources in the fhir resource table that
+ * reference a given patient
+ * @param DB sqlite database object
  * @param patientId single patient ID string
- * @returns an array of all resource_ids wrapped in objects for resources that reference the passed in patientId
+ * @returns an array of all resource_ids wrapped in objects for resources that
+ * reference the passed in patientId
  */
 export async function getReferencesToPatient(
   DB: sqlite.Database,
@@ -26,8 +29,9 @@ export async function getReferencesToPatient(
 }
 
 /**
- * Uses an SQL query to find all resource ids referenced by the fhir resource with the passed in id
- * @param DB database object
+ * Uses SQL query to find all resource ids referenced by the fhir resource table with the passed
+ * in resource id
+ * @param DB sqlite database object
  * @param resourceId id of the resource we want references of
  * @returns an array containing the resourceId, wrapped in an object,
  * for each resource referenced by the resource with the passed in resourceId
@@ -42,9 +46,9 @@ export async function getResourcesReferenced(
 /**
  * Recursively searches through the graph of references to pull the ids of all resources
  * related through some chain of references to the resource with the passed in id
- * @param DB database object
+ * @param DB sqlite database object
  * @param resourceId the resource id to begin the recursion with
- * @param explored set of all previously processed resources to avoid repeated effort
+ * @param explored set of all previously processed resources (to avoid repeated effort)
  * @returns an array of all resource ids referenced (through any chain of references)
  * by the resource with the passed in resource id
  */
@@ -56,36 +60,38 @@ export async function getRecursiveReferences(
   if (explored.has(resourceId)) {
     return [];
   }
-  //We have not yet explored the references of the current resource
+  // We have not yet explored the references of the current resource
   explored.add(resourceId);
-  //Pulls all direct references
+  // Pulls all direct references
   const refs = await getResourcesReferenced(DB, resourceId);
   const foundRefs: string[] = [];
-  //Call the function recursively on all those references and add their results to the ouput array
-  const promises = refs.map(async (ref: any) => {
+  // Call the function recursively on all those references and add their results to the ouput array
+  const promises = refs.map(async (ref: { reference_id: string }) => {
     foundRefs.push(...(await getRecursiveReferences(DB, ref.reference_id, explored)));
   });
   await Promise.all(promises);
-  //If the resource has no unexplored references, this will just return the passed in resourceId in an array
+  // If the resource has no unexplored references, this will just return the passed in resourceId in an array
   return [resourceId, ...foundRefs];
 }
 
 /**
- * Create transaction bundle from group of resources that reference patient and their
+ * Create transaction bundle that contains all resources that reference patient, and their
  * subsequent references
+ * @param DB sqlite database object
  * @param resourceIds - Ids for resources that reference patient and resources that
  * those resources reference
+ * @returns transaction bundle object
  */
 export async function createTransactionBundle(DB: sqlite.Database, resourceIds: string[]): Promise<TransactionBundle> {
   const tb = new TransactionBundle();
   // get data for each resource from the database
-  const resourceJSONs = await DB.all(
+  const resourceJSONs: { resource_json: string }[] = await DB.all(
     `SELECT resource_json FROM "fhir_resources" WHERE resource_id IN (${Array(resourceIds.length)
       .fill('?')
       .join(', ')})`,
     ...resourceIds
   );
-  resourceJSONs.forEach((resource: any) => {
+  resourceJSONs.forEach(resource => {
     tb.addEntryFromResource(JSON.parse(resource.resource_json));
   });
   return tb;
@@ -94,6 +100,8 @@ export async function createTransactionBundle(DB: sqlite.Database, resourceIds: 
 /**
  * Wrapper function to populate DB, get all patients and resources
  * that reference them, and create transaction bundle.
+ * @param ndjsonDirectory directory to search for ndjson files
+ * @param location location name for database
  * @returns TransactionBundle promise that can be uploaded to test
  * server
  */
@@ -123,7 +131,4 @@ export async function assembleTransactionBundle(ndjsonDirectory: string, locatio
   // referenced resources
   return createTransactionBundle(DB, resourceIds);
 }
-// assembleTransactionBundle('src/ndjsonResources/simple', './database.db').then(bundle =>
-//   console.log(JSON.stringify(bundle, null, 4))
-// );
-//assembleTransactionBundle('test/testFiles', ':memory:').then(bundle => console.log(JSON.stringify(bundle, null, 4)));
+assembleTransactionBundle('src/ndjsonResources/simple', './database.db');
