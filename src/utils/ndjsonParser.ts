@@ -53,7 +53,6 @@ function forEachFile(options: any, execute: (path: string, fileStats: any, next:
   });
 }
 
-// Create DB
 /**
  * takes in the desired path to a db and creates the db with appropriate tables
  * in that location
@@ -113,7 +112,7 @@ export async function insertResourceIntoDB(DB: sqlite.Database, line: string): P
       }, [])
     );
   }
-  insertedResources += 1; //We need to update this. No longer accurate (insertions for refs table)
+  insertedResources += 1;
 }
 
 /**
@@ -130,6 +129,7 @@ export async function checkReferences(db: sqlite.Database): Promise<void> {
    * returns an array of size $limit of rows from the db, starting at row: $offset
    */
   const getRowSet = async () => await db.all('SELECT * FROM "fhir_resources" LIMIT $limit OFFSET $offset', params);
+
   const checkRow = async (row: { resource_json: string; fhir_type: string; resource_id: string }): Promise<any> => {
     //Check if this regex is correct. Will all resources be uploaded in this format?
     const references = Array.from(row.resource_json.matchAll(new RegExp(/"reference":"(.*?)\/(.*?)"/gi)), m => [

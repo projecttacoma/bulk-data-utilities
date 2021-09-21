@@ -3,7 +3,7 @@ import fs from 'fs';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
