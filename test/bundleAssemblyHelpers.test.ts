@@ -100,6 +100,8 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
     expect(actual).toEqual(['1', '456']);
   });
 
+  // change what testTransactionBundle looks like
+  // make another example with two transaction bundles in the output
   test('createTransactionBundle returns a transaction bundle with all appropriate data', async () => {
     const db = await setupTestDB();
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES

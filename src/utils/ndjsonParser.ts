@@ -1,3 +1,5 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+
 import * as sqlite3 from 'sqlite3';
 import * as Walker from 'walk';
 import * as FS from 'fs';
@@ -179,6 +181,7 @@ export async function checkReferences(db: sqlite.Database): Promise<void> {
  * @return array of IDs for local references
  */
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getLocalReferences(entry: any): string[] {
   const targetKey = 'reference';
   const references: string[] = [];

@@ -105,32 +105,39 @@ export async function createTransactionBundle(DB: sqlite.Database, resourceIds: 
  * @returns TransactionBundle promise that can be uploaded to test
  * server
  */
-export async function assembleTransactionBundle(ndjsonDirectory: string, location: string): Promise<TransactionBundle> {
+export async function assembleTransactionBundle(
+  ndjsonDirectory: string,
+  location: string
+): Promise<TransactionBundle[]> {
   const DB = await ndjsonParser.populateDB(ndjsonDirectory, location);
   // get all patient Ids from database
   const patientIds = await getAllPatientIds(DB);
-  // array for resources that reference patient and resources that
-  // those resources reference
-  const resourceIds: string[] = [];
-  // resources that have been explored for references
-  const explored: Set<string> = new Set();
+  const bundleArray: TransactionBundle[] = [];
   const patientPromises = patientIds.map(async patientId => {
+    // array for resources that reference patient and resources that
+    // those resources reference
+    let resourceIds: string[] = [];
+    // resources that have been explored for references
+    let explored: Set<string> = new Set();
     explored.add(patientId.resource_id);
     resourceIds.push(patientId.resource_id);
     // get all direct references to patient, then recursively get
     // rest of the references
     const refs = await getReferencesToPatient(DB, patientId.resource_id);
     const referencePromises = refs.map(async ref => {
-      const results = await getRecursiveReferences(DB, ref.origin_resource_id, explored);
-      resourceIds.push(...results);
+      const a = getRecursiveReferences(DB, ref.origin_resource_id, explored);
+      return a;
     });
-    await Promise.all(referencePromises);
+    const results = await Promise.all(referencePromises);
+    resourceIds.push(...results.flat());
+    // create txn bundle of resources that ref patient and their
+    // referenced resources
+    const bundle = await createTransactionBundle(DB, resourceIds);
+    bundleArray.push(bundle);
+    resourceIds = [];
+    explored = new Set();
   });
   await Promise.all(patientPromises);
-  // create txn bundle of resources that ref patient and their
-  // referenced resources
-  return createTransactionBundle(DB, resourceIds);
+
+  return bundleArray;
 }
-// assembleTransactionBundle('src/ndjsonResources/simple', './database.db').then(bundle =>
-//   console.log(JSON.stringify(bundle, null, 4))
-// );

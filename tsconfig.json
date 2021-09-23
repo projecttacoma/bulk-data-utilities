@@ -12,6 +12,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2020.string"]
+    "lib": ["es2020"]
   }
 }
