@@ -10,7 +10,7 @@ import * as sqlite from 'sqlite';
  * the fhir resource table
  */
 export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
-  return await DB.all('SELECT resource_id FROM "fhir_resources" WHERE fhir_type = "Patient"');
+  return DB.all('SELECT resource_id FROM "fhir_resources" WHERE fhir_type = "Patient"');
 }
 
 /**
@@ -25,7 +25,7 @@ export async function getReferencesToPatient(
   DB: sqlite.Database,
   patientId: string
 ): Promise<{ origin_resource_id: string }[]> {
-  return await DB.all('SELECT origin_resource_id FROM "local_references" WHERE reference_id = ?', patientId);
+  return DB.all('SELECT origin_resource_id FROM "local_references" WHERE reference_id = ?', patientId);
 }
 
 /**
@@ -40,7 +40,7 @@ export async function getResourcesReferenced(
   DB: sqlite.Database,
   resourceId: string
 ): Promise<{ reference_id: string }[]> {
-  return await DB.all('SELECT reference_id FROM "local_references"  WHERE origin_resource_id = ?', resourceId);
+  return DB.all('SELECT reference_id FROM "local_references"  WHERE origin_resource_id = ?', resourceId);
 }
 
 /**
@@ -67,9 +67,10 @@ export async function getRecursiveReferences(
   const foundRefs: string[] = [];
   // Call the function recursively on all those references and add their results to the ouput array
   const promises = refs.map(async (ref: { reference_id: string }) => {
-    foundRefs.push(...(await getRecursiveReferences(DB, ref.reference_id, explored)));
+    return getRecursiveReferences(DB, ref.reference_id, explored);
   });
-  await Promise.all(promises);
+  const newRefs = await Promise.all(promises);
+  foundRefs.push(...newRefs.flat());
   // If the resource has no unexplored references, this will just return the passed in resourceId in an array
   return [resourceId, ...foundRefs];
 }
@@ -133,7 +134,7 @@ export async function assembleTransactionBundle(
     // create txn bundle of resources that ref patient and their
     // referenced resources
     const bundle = await createTransactionBundle(DB, resourceIds);
-    bundleArray.push(bundle);
+    bundleArray.push(bundle.toJSON());
     resourceIds = [];
     explored = new Set();
   });

@@ -109,7 +109,6 @@ async function probeServer(url: string): Promise<void> {
   } else if (results.status === 200) {
     // instead of console log, call retriever
     console.log(results.data.output);
-    //console.log(results.data.output);
   } else if (results.status === 500) {
     console.error(results.data);
   }

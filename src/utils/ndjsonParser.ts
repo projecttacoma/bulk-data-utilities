@@ -219,7 +219,7 @@ export async function populateDB(ndjsonDirectory: string, location: string): Pro
         const promises = lines
           .trim()
           .split(/\n/)
-          .map(async (line: string) => await insertResourceIntoDB(DB, line));
+          .map(async (line: string) => insertResourceIntoDB(DB, line));
         await Promise.all(promises);
         next();
       }

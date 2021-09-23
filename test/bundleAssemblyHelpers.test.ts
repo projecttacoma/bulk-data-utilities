@@ -3,6 +3,7 @@ import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
 import testTransactionBundle from './testFiles/testTransactionBundle.json';
+import testTransactionBundleArray from './ndjsonResources/simple/simpleOutputBundle.json';
 
 async function setupTestDB() {
   // create in-memory DB
@@ -31,13 +32,23 @@ async function setupTestDB() {
   }
 }
 
+let db: sqlite.Database;
+
+beforeEach(async () => {
+  db = await setupTestDB();
+  return db;
+});
+
+afterEach(async () => {
+  db.close();
+});
+
 const PATIENT_IDS_OUTPUT = [{ resource_id: '1' }, { resource_id: '2' }, { resource_id: '3' }];
 const GET_REFS_TO_PATIENT_OUTPUT = [{ origin_resource_id: '1' }];
 const GET_RESOURCES_REF_OUTPUT = [{ reference_id: '123' }, { reference_id: '456' }];
 
 describe('Testing functions in bundleAssemblyHelpers.ts', () => {
   test('getAllPatientIds retrieves all patient ids', async () => {
-    const db = await setupTestDB();
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
     ('Patient', '1', '{}'),
     ('Patient', '2', '{}'),
@@ -48,13 +59,11 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
   });
 
   test('getAllPatientIds returns empty array when no patients present', async () => {
-    const db = await setupTestDB();
     const actual = await bundleAssemblyHelpers.getAllPatientIds(db);
     expect(actual).toEqual([]);
   });
 
   test('getReferencesToPatient retrieves all resources that reference given patient ID', async () => {
-    const db = await setupTestDB();
     // Resource that references test patient w/ id 123
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
     ('Encounter', '1', '{"reference": "Patient/123", "individual": {"reference": "Patient/456"}}')`);
@@ -70,7 +79,6 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
   });
 
   test('getResourcesReferenced retrieves all resource ids referenced by the given fhir resource', async () => {
-    const db = await setupTestDB();
     // Resource that has references
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
     ('Encounter', '1', '{"reference": "Patient/123", "individual": {"reference": "Practitioner/456"}}')`);
@@ -83,7 +91,6 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
   });
 
   test('getRecursiveReferences retrieves ids of all resources related to the given resource', async () => {
-    const db = await setupTestDB();
     const explored: Set<string> = new Set();
     // insert resource of interest into db
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
@@ -100,10 +107,7 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
     expect(actual).toEqual(['1', '456']);
   });
 
-  // change what testTransactionBundle looks like
-  // make another example with two transaction bundles in the output
   test('createTransactionBundle returns a transaction bundle with all appropriate data', async () => {
-    const db = await setupTestDB();
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
     ('Encounter', '1', '{"resourceType":"Encounter","id":"1","subject":{"reference":"Patient/2"},"participant":[{"individual":{"reference":"Practitioner/3"}}]}')`);
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
@@ -117,6 +121,11 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
 
   test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
     const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/testFiles', ':memory:');
-    expect(actual).toEqual(testTransactionBundle);
+    expect(actual).toEqual([testTransactionBundle]);
+  });
+
+  test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/ndjsonResources/simple', ':memory:');
+    expect(actual).toEqual(testTransactionBundleArray);
   });
 });
