@@ -8,7 +8,8 @@ const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
 };
-const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+
+const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 //Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 const API_URL =
@@ -28,6 +29,7 @@ const EXAMPLE_REQUIREMENTS = [
     codeFilter: []
   }
 ];
+
 /**
  * Function taken directly from fqm-execution. parses measure bundle into
  * appropriate format for dataRequirements function
@@ -105,6 +107,7 @@ async function probeServer(url: string): Promise<void> {
   if (results.status === 202) {
     setTimeout(() => probeServer(url), 1000);
   } else if (results.status === 200) {
+    // instead of console log, call retriever
     console.log(results.data.output);
   } else if (results.status === 500) {
     console.error(results.data);
