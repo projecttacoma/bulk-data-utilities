@@ -92,6 +92,7 @@ async function queryBulkDataServer(url: string): Promise<void> {
   await axios
     .get(url, { headers })
     .then(resp => {
+      console.log(resp.headers['content-location']);
       probeServer(resp.headers['content-location']);
     })
     .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));

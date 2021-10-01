@@ -53,6 +53,11 @@ const EXPECTED_POPULATE_DB_RESOURCES = [
       '{"resourceType":"Encounter","id":"1","subject":{"reference":"Patient/2"},"participant":[{"individual":{"reference":"Practitioner/3"}}]}'
   },
   {
+    fhir_type: 'Encounter',
+    resource_id: '4',
+    resource_json: '{"resourceType":"Encounter","id":"4","reference":"Encounter/1"}'
+  },
+  {
     fhir_type: 'Patient',
     resource_id: '2',
     resource_json: '{"resourceType":"Patient","id":"2"}'
@@ -67,7 +72,8 @@ const EXPECTED_POPULATE_DB_RESOURCES = [
 
 const EXPECTED_POPULATE_DB_REFERENCES = [
   { origin_resource_id: '1', reference_id: '2' },
-  { origin_resource_id: '1', reference_id: '3' }
+  { origin_resource_id: '1', reference_id: '3' },
+  { origin_resource_id: '4', reference_id: '1' }
 ];
 
 describe('test ndjson parser functions', () => {

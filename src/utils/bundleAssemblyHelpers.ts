@@ -14,6 +14,17 @@ export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_
 }
 
 /**
+ * Uses SQL query to retrieve all the Patient resource ids from the fhir resource
+ * table in our database
+ * @param DB sqlite database object
+ * @returns an array containing resource_id, wrapped in an object, for each patient in
+ * the fhir resource table
+ */
+export async function getAllResourceIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
+  return DB.all('SELECT resource_id FROM "fhir_resources"');
+}
+
+/**
  * Uses SQL query to retrieve all the resources in the fhir resource table that
  * reference a given patient
  * @param DB sqlite database object
@@ -44,30 +55,61 @@ export async function getResourcesReferenced(
 }
 
 /**
+ * Uses SQL query to find all resource ids which correspond to fhir resources that
+ * reference the passed in object
+ * @param DB sqlite database object
+ * @param resourceId id of the resource we want references of
+ * @returns an array containing the resourceId, wrapped in an object,
+ * for each resource which references the resource with the passed in resourceId
+ */
+export async function getResourcesThatReference(
+  DB: sqlite.Database,
+  resourceId: string
+): Promise<{ origin_resource_id: string }[]> {
+  return DB.all('SELECT origin_resource_id FROM "local_references"  WHERE reference_id = ?', resourceId);
+}
+
+/**
  * Recursively searches through the graph of references to pull the ids of all resources
  * related through some chain of references to the resource with the passed in id
  * @param DB sqlite database object
  * @param resourceId the resource id to begin the recursion with
- * @param explored set of all previously processed resources (to avoid repeated effort)
+ * @param explored set of all previously processed resources within this recursive call(to avoid repeated effort)
+ * @param enteredResources set of all resources entered in database to check incoming refs against
+ * and eventually use to catch all un-added resources
  * @returns an array of all resource ids referenced (through any chain of references)
  * by the resource with the passed in resource id
  */
 export async function getRecursiveReferences(
   DB: sqlite.Database,
   resourceId: string,
-  explored: Set<string>
+  explored: Set<string>,
+  enteredResources: Set<string>
 ): Promise<string[]> {
   if (explored.has(resourceId)) {
     return [];
   }
   // We have not yet explored the references of the current resource
   explored.add(resourceId);
+  enteredResources.add(resourceId);
   // Pulls all direct references
-  const refs = await getResourcesReferenced(DB, resourceId);
+  const outgoingRefs = await getResourcesReferenced(DB, resourceId);
+  // Pulls all resource ids of resources which reference the passed in id
+  const incomingRefs = await getResourcesThatReference(DB, resourceId);
+  const refs = outgoingRefs.map((ref: { reference_id: string }) => ref.reference_id);
+
+  refs.push(
+    ...incomingRefs
+      //since the incoming refs won't cause reference errors in the transactionBundle upload, its not neccessary to
+      //repeat them ever, even across transaction bundles
+      .filter((ref: { origin_resource_id: string }) => !enteredResources.has(ref.origin_resource_id))
+      .map((ref: { origin_resource_id: string }) => ref.origin_resource_id)
+  );
+  //refs.push(...(await getResourcesThatReference(DB, resourceId)));
   const foundRefs: string[] = [];
   // Call the function recursively on all those references and add their results to the ouput array
-  const promises = refs.map(async (ref: { reference_id: string }) => {
-    return getRecursiveReferences(DB, ref.reference_id, explored);
+  const promises = refs.map(async (ref: string) => {
+    return getRecursiveReferences(DB, ref, explored, enteredResources);
   });
   const newRefs = await Promise.all(promises);
   foundRefs.push(...newRefs.flat());
@@ -110,6 +152,7 @@ export async function assembleTransactionBundle(
   ndjsonDirectory: string,
   location: string
 ): Promise<TransactionBundle[]> {
+  const enteredResources: Set<string> = new Set();
   const DB = await ndjsonParser.populateDB(ndjsonDirectory, location);
   // get all patient Ids from database
   const patientIds = await getAllPatientIds(DB);
@@ -121,12 +164,13 @@ export async function assembleTransactionBundle(
     // resources that have been explored for references
     let explored: Set<string> = new Set();
     explored.add(patientId.resource_id);
+    enteredResources.add(patientId.resource_id);
     resourceIds.push(patientId.resource_id);
     // get all direct references to patient, then recursively get
     // rest of the references
     const refs = await getReferencesToPatient(DB, patientId.resource_id);
     const referencePromises = refs.map(async ref => {
-      const a = getRecursiveReferences(DB, ref.origin_resource_id, explored);
+      const a = getRecursiveReferences(DB, ref.origin_resource_id, explored, enteredResources);
       return a;
     });
     const results = await Promise.all(referencePromises);
@@ -139,6 +183,26 @@ export async function assembleTransactionBundle(
     explored = new Set();
   });
   await Promise.all(patientPromises);
+
+  // Find all resources that have so far not been entered into the bundle and extract the ids
+  const cleanUpIds = (await getAllResourceIds(DB)).reduce((acc: string[], res: { resource_id: string }) => {
+    if (!enteredResources.has(res.resource_id)) {
+      acc.push(res.resource_id);
+    }
+    return acc;
+  }, []);
+  if (cleanUpIds.length > 0) {
+    // Define explored outside this map since all the entries are going to the same bundle anyway
+    const explored: Set<string> = new Set();
+    const cleanUpPromises = cleanUpIds.map(async id => {
+      const a = getRecursiveReferences(DB, id, explored, enteredResources);
+      return a;
+    });
+    const results = await Promise.all(cleanUpPromises);
+    cleanUpIds.push(...results.flat());
+    const cleanUpBundle = await createTransactionBundle(DB, cleanUpIds);
+    bundleArray.push(cleanUpBundle.toJSON());
+  }
 
   return bundleArray;
 }

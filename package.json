@@ -36,7 +36,7 @@
     "lint:fix": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "prettier": "prettier --check \"**/*.{js,ts}\"",
     "prettier:fix": "prettier --write \"**/*.{js,ts}\"",
-    "test": "jest --silent",
+    "test": "jes --silent",
     "check": "npm run test && npm run lint && npm run prettier"
   },
   "repository": {
