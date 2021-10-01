@@ -163,7 +163,7 @@ describe('test ndjson parser functions', () => {
   });
 
   test('populateDB creates database with correct info', async () => {
-    const db = await populateDB('test/testFiles', ':memory:');
+    const db = await populateDB('test/fixtures/testFiles', ':memory:');
     const fhirResources = await db.all('SELECT * FROM "fhir_resources";');
     const references = await db.all('SELECT * FROM "local_references";');
     expect(fhirResources).toEqual(EXPECTED_POPULATE_DB_RESOURCES);

@@ -14,10 +14,10 @@ export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_
 }
 
 /**
- * Uses SQL query to retrieve all the Patient resource ids from the fhir resource
+ * Uses SQL query to retrieve all the resource ids from the fhir resource
  * table in our database
  * @param DB sqlite database object
- * @returns an array containing resource_id, wrapped in an object, for each patient in
+ * @returns an array containing resource_id, wrapped in an object, for each resource in
  * the fhir resource table
  */
 export async function getAllResourceIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
@@ -105,7 +105,6 @@ export async function getRecursiveReferences(
       .filter((ref: { origin_resource_id: string }) => !enteredResources.has(ref.origin_resource_id))
       .map((ref: { origin_resource_id: string }) => ref.origin_resource_id)
   );
-  //refs.push(...(await getResourcesThatReference(DB, resourceId)));
   const foundRefs: string[] = [];
   // Call the function recursively on all those references and add their results to the ouput array
   const promises = refs.map(async (ref: string) => {
@@ -206,3 +205,6 @@ export async function assembleTransactionBundle(
 
   return bundleArray;
 }
+assembleTransactionBundle('./test/fixtures/convertedResources', ':memory:').then(res =>
+  console.log(JSON.stringify(res, null, 4))
+);

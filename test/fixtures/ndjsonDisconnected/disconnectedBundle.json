@@ -90,6 +90,17 @@
           "id": "7",
           "resourceType": "Encounter"
         }
+      },
+      {
+        "request": {
+          "method": "POST",
+          "url": "Observation"
+        },
+        "resource": {
+          "id": "8",
+          "resourceType": "Observation",
+          "reference": "Practitioner/5"
+        }
       }
     ]
   }

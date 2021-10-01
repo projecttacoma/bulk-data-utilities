@@ -2,9 +2,9 @@ import * as bundleAssemblyHelpers from '../src/utils/bundleAssemblyHelpers';
 import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
-import testTransactionBundle from './testFiles/testTransactionBundle.json';
-import testTransactionBundleArray from './ndjsonResources/simple/simpleOutputBundle.json';
-import disconnectedBundle from './ndjsonDisconnected/disconnectedBundle.json';
+import testTransactionBundle from './fixtures/testFiles/testTransactionBundle.json';
+import testTransactionBundleArray from './fixtures/ndjsonResources/simple/simpleOutputBundle.json';
+import disconnectedBundle from './fixtures/ndjsonDisconnected/disconnectedBundle.json';
 
 async function setupTestDB() {
   // create in-memory DB
@@ -150,16 +150,22 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
   });
 
   test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/testFiles', ':memory:');
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/fixtures/testFiles', ':memory:');
     expect(actual).toEqual([testTransactionBundle]);
   });
 
   test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/ndjsonResources/simple', ':memory:');
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle(
+      'test/fixtures/ndjsonResources/simple',
+      ':memory:'
+    );
     expect(actual).toEqual(testTransactionBundleArray);
   });
   test('assembleTransactionBundle correctly executes cleanupBundle and incoming refs', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/ndjsonDisconnected', ':memory:');
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle(
+      'test/fixtures/ndjsonDisconnected',
+      ':memory:'
+    );
     expect(actual).toEqual(disconnectedBundle);
   });
 });
