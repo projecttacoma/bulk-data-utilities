@@ -95,10 +95,11 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
     const explored: Set<string> = new Set();
     const enteredResources: Set<string> = new Set();
 
-    // insert resource of interest into db
-    await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
-    ('Encounter', '1', '{"reference": "Patient/123", "individual": {"reference": "Practitioner/456"}}')`);
-    // insert all resources related to the given resource
+    /* 
+      Adding a reference network for theoretically an encounter with id: 1 which references a patient
+      with id: 123 and a practitioner with id: 456
+      insert all resources related to the given resource 
+    */
     await db.all(`INSERT INTO "local_references" (origin_resource_id, reference_id) VALUES
     ('1', '123'),
     ('1', '456')`);
@@ -115,10 +116,12 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
   test('getRecursiveReferences retrieves ids of all 2-way refs related to the given resource', async () => {
     const explored: Set<string> = new Set();
     const enteredResources: Set<string> = new Set();
-    // insert resource of interest into db
-    await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
-    ('Encounter', '1', '{"reference": "Patient/123", "individual": {"reference": "Practitioner/456"}}')`);
-    // insert all resources related to the given resource
+    /* 
+      Adding a reference network for theoretically an encounter with id: 1 which references a patient
+      with id: 123 and a practitioner with id: 456. Also, an observation with id: 2 which references the
+      practitioner with id: 456
+      insert all resources related to the given resource
+    */
     await db.all(`INSERT INTO "local_references" (origin_resource_id, reference_id) VALUES
     ('1', '123'),
     ('1', '456'),
