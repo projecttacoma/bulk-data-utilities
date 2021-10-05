@@ -2,8 +2,9 @@ import * as bundleAssemblyHelpers from '../src/utils/bundleAssemblyHelpers';
 import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
-import testTransactionBundle from './testFiles/testTransactionBundle.json';
-import testTransactionBundleArray from './ndjsonResources/simple/simpleOutputBundle.json';
+import testTransactionBundle from './fixtures/testFiles/testTransactionBundle.json';
+import testTransactionBundleArray from './fixtures/ndjsonResources/simple/simpleOutputBundle.json';
+import disconnectedBundle from './fixtures/ndjsonDisconnected/disconnectedBundle.json';
 
 async function setupTestDB() {
   // create in-memory DB
@@ -92,10 +93,13 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
 
   test('getRecursiveReferences retrieves ids of all resources related to the given resource', async () => {
     const explored: Set<string> = new Set();
-    // insert resource of interest into db
-    await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
-    ('Encounter', '1', '{"reference": "Patient/123", "individual": {"reference": "Practitioner/456"}}')`);
-    // insert all resources related to the given resource
+    const enteredResources: Set<string> = new Set();
+
+    /* 
+      Adding a reference network for theoretically an encounter with id: 1 which references a patient
+      with id: 123 and a practitioner with id: 456
+      insert all resources related to the given resource 
+    */
     await db.all(`INSERT INTO "local_references" (origin_resource_id, reference_id) VALUES
     ('1', '123'),
     ('1', '456')`);
@@ -103,8 +107,34 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
     // add patient id
     const patientId = '123';
     explored.add(patientId);
-    const actual = await bundleAssemblyHelpers.getRecursiveReferences(db, resourceId, explored);
+    enteredResources.add(patientId);
+
+    const actual = await bundleAssemblyHelpers.getRecursiveReferences(db, resourceId, explored, enteredResources);
     expect(actual).toEqual(['1', '456']);
+  });
+
+  test('getRecursiveReferences retrieves ids of all 2-way refs related to the given resource', async () => {
+    const explored: Set<string> = new Set();
+    const enteredResources: Set<string> = new Set();
+    /* 
+      Adding a reference network for theoretically an encounter with id: 1 which references a patient
+      with id: 123 and a practitioner with id: 456. Also, an observation with id: 2 which references the
+      practitioner with id: 456
+      insert all resources related to the given resource
+    */
+    await db.all(`INSERT INTO "local_references" (origin_resource_id, reference_id) VALUES
+    ('1', '123'),
+    ('1', '456'),
+    ('2', '456')
+    `);
+    const resourceId = '1';
+    // add patient id
+    const patientId = '123';
+    explored.add(patientId);
+    enteredResources.add(patientId);
+
+    const actual = await bundleAssemblyHelpers.getRecursiveReferences(db, resourceId, explored, enteredResources);
+    expect(actual.sort()).toEqual(['1', '2', '456'].sort());
   });
 
   test('createTransactionBundle returns a transaction bundle with all appropriate data', async () => {
@@ -114,18 +144,31 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
     ('Patient', '2', '{"resourceType":"Patient","id":"2"}')`);
     await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
     ('Practitioner', '3', '{"resourceType":"Practitioner","id":"3"}')`);
-    const resourceIds = ['1', '2', '3'];
+    await db.all(`INSERT INTO "fhir_resources" (fhir_type, resource_id, resource_json) VALUES
+    ('Encounter', '4', '{"resourceType":"Encounter","id":"4","reference":"Encounter/1"}')`);
+
+    const resourceIds = ['1', '2', '3', '4'];
     const actual = await bundleAssemblyHelpers.createTransactionBundle(db, resourceIds);
     expect(actual).toEqual(testTransactionBundle);
   });
 
   test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/testFiles', ':memory:');
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/fixtures/testFiles', ':memory:');
     expect(actual).toEqual([testTransactionBundle]);
   });
 
   test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/ndjsonResources/simple', ':memory:');
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle(
+      'test/fixtures/ndjsonResources/simple',
+      ':memory:'
+    );
     expect(actual).toEqual(testTransactionBundleArray);
+  });
+  test('assembleTransactionBundle correctly executes cleanupBundle and incoming refs', async () => {
+    const actual = await bundleAssemblyHelpers.assembleTransactionBundle(
+      'test/fixtures/ndjsonDisconnected',
+      ':memory:'
+    );
+    expect(actual).toEqual(disconnectedBundle);
   });
 });

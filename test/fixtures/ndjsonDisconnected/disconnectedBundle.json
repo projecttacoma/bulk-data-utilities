@@ -1,0 +1,107 @@
+[
+  {
+    "resourceType": "Bundle",
+    "type": "transaction",
+    "entry": [
+      {
+        "resource": {
+          "resourceType": "Encounter",
+          "id": "1",
+          "subject": {
+            "reference": "Patient/2"
+          },
+          "participant": [
+            {
+              "individual": {
+                "reference": "Practitioner/3"
+              }
+            }
+          ]
+        },
+        "request": {
+          "method": "POST",
+          "url": "Encounter"
+        }
+      },
+      {
+        "resource": {
+          "resourceType": "Patient",
+          "id": "2"
+        },
+        "request": {
+          "method": "POST",
+          "url": "Patient"
+        }
+      },
+      {
+        "resource": {
+          "resourceType": "Practitioner",
+          "id": "3"
+        },
+        "request": {
+          "method": "POST",
+          "url": "Practitioner"
+        }
+      },
+      {
+        "request": {
+          "method": "POST",
+          "url": "Encounter"
+        },
+        "resource": {
+          "id": "4",
+          "reference": "Encounter/1",
+          "resourceType": "Encounter"
+        }
+      },
+      {
+        "request": {
+          "method": "POST",
+          "url": "Observation"
+        },
+        "resource": {
+          "resourceType": "Observation",
+          "id": "6",
+          "reference": "Encounter/4"
+        }
+      }
+    ]
+  },
+  {
+    "resourceType": "Bundle",
+    "type": "transaction",
+    "entry": [
+      {
+        "request": {
+          "method": "POST",
+          "url": "Practitioner"
+        },
+        "resource": {
+          "id": "5",
+          "resourceType": "Practitioner"
+        }
+      },
+      {
+        "request": {
+          "method": "POST",
+          "url": "Encounter"
+        },
+        "resource": {
+          "id": "7",
+          "resourceType": "Encounter"
+        }
+      },
+      {
+        "request": {
+          "method": "POST",
+          "url": "Observation"
+        },
+        "resource": {
+          "id": "8",
+          "resourceType": "Observation",
+          "reference": "Practitioner/5"
+        }
+      }
+    ]
+  }
+]

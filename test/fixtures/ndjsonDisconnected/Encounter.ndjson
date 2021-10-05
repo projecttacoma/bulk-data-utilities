@@ -1,0 +1,3 @@
+{"resourceType":"Encounter","id":"1","subject":{"reference":"Patient/2"},"participant":[{"individual":{"reference":"Practitioner/3"}}]}
+{"resourceType":"Encounter","id":"4","reference":"Encounter/1"}
+{"resourceType":"Encounter","id":"7"}

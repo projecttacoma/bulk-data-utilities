@@ -1,0 +1,24 @@
+[
+  {
+    "resourceType": "Patient",
+    "id": "123"
+  },
+  {
+    "resourceType": "Encounter",
+    "id": "456",
+    "subject": {
+      "reference": "Patient/123"
+    }
+  },
+  {
+    "resourceType": "Observation",
+    "id": "789",
+    "focus": {
+      "reference": "Encounter/456"
+    }
+  },
+  {
+    "resourceType": "Practitioner",
+    "id": "101112"
+  }
+]
