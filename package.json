@@ -2,10 +2,7 @@
   "name": "typescript-node-starter",
   "version": "0.0.1",
   "description": "",
-  "main": "build/app.js",
-  "files": [
-    "build/*"
-  ],
+  "main": "src/RequirementsQuery.ts",
   "dependencies": {
     "axios": "^0.21.1",
     "fqm-execution": "^0.8.0",
