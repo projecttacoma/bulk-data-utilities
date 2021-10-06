@@ -139,5 +139,13 @@ async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirem
   queryBulkDataServer(url);
 }
 
+module.exports = {
+  parseBundle,
+  getDataRequirementsQueries,
+  queryBulkDataServer,
+  probeServer,
+  retrieveBulkDataFromRequirements
+};
+
 //retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
 //retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
