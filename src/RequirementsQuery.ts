@@ -12,7 +12,7 @@ const headers = {
 const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 //Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
-const API_URL =
+export const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
 const EXAMPLE_REQUIREMENTS = [
@@ -36,7 +36,7 @@ const EXAMPLE_REQUIREMENTS = [
  * @param filePath: path to measure bundle on local machine
  * @returns fhir4.Bundle: a MeasureBundle as a JSON object parsed from the passed file
  */
-function parseBundle(filePath: string): fhir4.Bundle {
+export function parseBundle(filePath: string): fhir4.Bundle {
   const contents = fs.readFileSync(filePath, 'utf8');
   return JSON.parse(contents) as fhir4.Bundle;
 }
@@ -88,7 +88,7 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-async function queryBulkDataServer(url: string): Promise<void> {
+export async function queryBulkDataServer(url: string): Promise<void> {
   await axios
     .get(url, { headers })
     .then(resp => {
@@ -102,7 +102,7 @@ async function queryBulkDataServer(url: string): Promise<void> {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-async function probeServer(url: string): Promise<void> {
+export async function probeServer(url: string): Promise<void> {
   const results = await axios.get(url, { headers });
   if (results.status === 202) {
     setTimeout(() => probeServer(url), 1000);
@@ -131,21 +131,13 @@ async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
  * takes in data requirements and creates a URL to query bulk data server, then queries it
  * @param requirements : dataRequirements as output from fqm-execution
  */
-async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
+export async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
   const params = getDataRequirementsQueries(requirements);
   const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   console.log(url);
   console.log(JSON.stringify(params, null, 4));
   queryBulkDataServer(url);
 }
-
-module.exports = {
-  parseBundle,
-  getDataRequirementsQueries,
-  queryBulkDataServer,
-  probeServer,
-  retrieveBulkDataFromRequirements
-};
 
 //retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
 //retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
