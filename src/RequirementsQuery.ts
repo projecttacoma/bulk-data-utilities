@@ -4,6 +4,8 @@ import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
@@ -53,13 +55,13 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
-      if (dr?.codeFilter?.[0]?.code?.[0]) {
-        const key = dr?.codeFilter?.[0].path;
-        key && (q.params[key] = dr.codeFilter[0].code[0].code);
-      } else if (dr?.codeFilter?.[0]?.valueSet) {
-        const key = `${dr?.codeFilter?.[0].path}:in`;
-        key && (q.params[key] = dr.codeFilter[0].valueSet);
-      }
+      // if (dr?.codeFilter?.[0]?.code?.[0]) {
+      //   const key = dr?.codeFilter?.[0].path;
+      //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
+      // } else if (dr?.codeFilter?.[0]?.valueSet) {
+      //   const key = `${dr?.codeFilter?.[0].path}:in`;
+      //   key && (q.params[key] = dr.codeFilter[0].valueSet);
+      // }
       queries.push(q);
     }
   });
@@ -89,12 +91,19 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * @param url: A bulk data export FHIR server url with params
  */
 export async function queryBulkDataServer(url: string): Promise<void> {
-  await axios
-    .get(url, { headers })
-    .then(resp => {
-      probeServer(resp.headers['content-location']);
-    })
-    .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));
+  try {
+    const resp = await axios.get(url, { headers });
+    return await probeServer(resp.headers['content-location']);
+  } catch {
+    console.error();
+  }
+
+  // await axios
+  //   .get(url, { headers })
+  //   .then(async resp => {
+  //     return await probeServer(resp.headers['content-location']);
+  //   })
+  // .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));
 }
 
 /**
@@ -105,10 +114,13 @@ export async function queryBulkDataServer(url: string): Promise<void> {
 export async function probeServer(url: string): Promise<void> {
   const results = await axios.get(url, { headers });
   if (results.status === 202) {
+    console.log('uhhh');
     setTimeout(() => probeServer(url), 1000);
   } else if (results.status === 200) {
     // instead of console log, call retriever
+    console.log('from probeserver');
     console.log(results.data.output);
+    return results.data.output;
   } else if (results.status === 500) {
     console.error(results.data);
   }
@@ -118,13 +130,29 @@ export async function probeServer(url: string): Promise<void> {
  * parses a measure bundle based on the local path and queries a bulk data server for the data requirements
  * @param measureBundle: path to a local measure bundle
  */
-async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
+export async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
   console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+}
+
+/**
+ * parses a measure bundle object and queries a bulk data server for the data requirements
+ * @param measureBundle: measure bundle object
+ */
+export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle) {
+  console.log(measureBundle);
+  const dr = await Calculator.calculateDataRequirements(measureBundle);
+  console.log('from retrieveBulkDataFromMeasureBundle');
+  console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
+  if (!dr.results.dataRequirement) {
+    dr.results.dataRequirement = [];
+  }
+  const a = await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return a;
 }
 
 /**
@@ -132,11 +160,14 @@ async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
  * @param requirements : dataRequirements as output from fqm-execution
  */
 export async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
-  const params = getDataRequirementsQueries(requirements);
+  const params = await getDataRequirementsQueries(requirements);
+  console.log('the params');
+  console.log(params);
   const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
-  console.log(url);
-  console.log(JSON.stringify(params, null, 4));
-  queryBulkDataServer(url);
+  //console.log(url);
+  //console.log(JSON.stringify(params, null, 4));
+  const a = await queryBulkDataServer(url);
+  return a;
 }
 
 //retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)

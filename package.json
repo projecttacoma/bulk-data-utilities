@@ -1,8 +1,11 @@
 {
-  "name": "typescript-node-starter",
+  "name": "bulk-data-utilities",
   "version": "0.0.1",
   "description": "",
-  "main": "src/RequirementsQuery.ts",
+  "main": "build/index.js",
+  "files": [
+    "build/*"
+  ],
   "dependencies": {
     "axios": "^0.21.1",
     "fqm-execution": "^0.8.0",
@@ -34,7 +37,8 @@
     "prettier": "prettier --check \"**/*.{js,ts}\"",
     "prettier:fix": "prettier --write \"**/*.{js,ts}\"",
     "test": "jest --silent",
-    "check": "npm run test && npm run lint && npm run prettier"
+    "check": "npm run test && npm run lint && npm run prettier",
+    "postinstall": "npm run build"
   },
   "repository": {
     "type": "git",
