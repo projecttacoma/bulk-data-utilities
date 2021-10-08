@@ -1,6 +1,6 @@
 import { Calculator } from 'fqm-execution';
 import fs from 'fs';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams } from './types/RequirementsQueryTypes';
 
@@ -8,6 +8,8 @@ const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
 };
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
@@ -99,8 +101,8 @@ async function queryBulkDataServer(url: string): Promise<void> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
-  } catch {
-    console.error();
+  } catch (err) {
+    return (err as AxiosError).response?.data;
   }
 }
 
