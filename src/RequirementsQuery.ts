@@ -106,24 +106,38 @@ export async function queryBulkDataServer(url: string): Promise<void> {
   // .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));
 }
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 /**
  * Repeatedly checks the passed url (every second) until the request either fails or succeeds
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
 export async function probeServer(url: string): Promise<void> {
-  const results = await axios.get(url, { headers });
-  if (results.status === 202) {
-    console.log('uhhh');
-    setTimeout(() => probeServer(url), 1000);
-  } else if (results.status === 200) {
-    // instead of console log, call retriever
-    console.log('from probeserver');
-    console.log(results.data.output);
-    return results.data.output;
-  } else if (results.status === 500) {
+  let results = await axios.get(url, { headers });
+  while (results.status === 202) {
+    await sleep(1000);
+    results = await axios.get(url, { headers });
+  }
+  if (results.status === 500) {
     console.error(results.data);
   }
+  return results.data.output;
+
+  //const results = await axios.get(url, { headers });
+  // if (results.status === 202) {
+  //   console.log('uhhh');
+  //   setTimeout(() => probeServer(url), 1000);
+  // } else if (results.status === 200) {
+  //   // instead of console log, call retriever
+  //   console.log('from probeserver');
+  //   console.log(results.data.output);
+  //   return results.data.output;
+  // } else if (results.status === 500) {
+  //   console.error(results.data);
+  // }
 }
 
 /**
@@ -144,10 +158,7 @@ export async function retrieveBulkDataFromMeasureBundlePath(measureBundle: strin
  * @param measureBundle: measure bundle object
  */
 export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle) {
-  console.log(measureBundle);
   const dr = await Calculator.calculateDataRequirements(measureBundle);
-  console.log('from retrieveBulkDataFromMeasureBundle');
-  console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
@@ -161,11 +172,7 @@ export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bun
  */
 export async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
   const params = await getDataRequirementsQueries(requirements);
-  console.log('the params');
-  console.log(params);
   const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
-  //console.log(url);
-  //console.log(JSON.stringify(params, null, 4));
   const a = await queryBulkDataServer(url);
   return a;
 }
