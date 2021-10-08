@@ -2,18 +2,16 @@ import { Calculator } from 'fqm-execution';
 import fs from 'fs';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
-import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+import { DRQuery, APIParams } from './types/RequirementsQueryTypes';
 
 const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
 };
 
-const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
-//Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
+// Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 export const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
@@ -38,7 +36,7 @@ const EXAMPLE_REQUIREMENTS = [
  * @param filePath: path to measure bundle on local machine
  * @returns fhir4.Bundle: a MeasureBundle as a JSON object parsed from the passed file
  */
-export function parseBundle(filePath: string): fhir4.Bundle {
+function parseBundle(filePath: string): fhir4.Bundle {
   const contents = fs.readFileSync(filePath, 'utf8');
   return JSON.parse(contents) as fhir4.Bundle;
 }
@@ -51,10 +49,17 @@ export function parseBundle(filePath: string): fhir4.Bundle {
 export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequirement[]): APIParams => {
   const queries: DRQuery[] = [];
 
-  //converts dataRequirements output into a format easily parsed into URL params
+  // converts dataRequirements output into a format easily parsed into URL params
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
+
+      /*
+      NOTE: codeFilter code has been commented out in order to test
+      bulkImport in deqm-test-server. Otherwise, errors arise since
+      the $export reference server does not support _typeFilter
+      */
+
       // if (dr?.codeFilter?.[0]?.code?.[0]) {
       //   const key = dr?.codeFilter?.[0].path;
       //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
@@ -90,20 +95,13 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-export async function queryBulkDataServer(url: string): Promise<void> {
+async function queryBulkDataServer(url: string): Promise<void> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch {
     console.error();
   }
-
-  // await axios
-  //   .get(url, { headers })
-  //   .then(async resp => {
-  //     return await probeServer(resp.headers['content-location']);
-  //   })
-  // .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));
 }
 
 function sleep(ms: number) {
@@ -125,26 +123,13 @@ export async function probeServer(url: string): Promise<void> {
     console.error(results.data);
   }
   return results.data.output;
-
-  //const results = await axios.get(url, { headers });
-  // if (results.status === 202) {
-  //   console.log('uhhh');
-  //   setTimeout(() => probeServer(url), 1000);
-  // } else if (results.status === 200) {
-  //   // instead of console log, call retriever
-  //   console.log('from probeserver');
-  //   console.log(results.data.output);
-  //   return results.data.output;
-  // } else if (results.status === 500) {
-  //   console.error(results.data);
-  // }
 }
 
 /**
- * parses a measure bundle based on the local path and queries a bulk data server for the data requirements
+ * Parses a measure bundle based on the local path and queries a bulk data server for the data requirements
  * @param measureBundle: path to a local measure bundle
  */
-export async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string) {
+async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
   console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
@@ -154,27 +139,25 @@ export async function retrieveBulkDataFromMeasureBundlePath(measureBundle: strin
 }
 
 /**
- * parses a measure bundle object and queries a bulk data server for the data requirements
+ * Parses a measure bundle object and queries a bulk data server for the data requirements
  * @param measureBundle: measure bundle object
  */
 export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle) {
-  const dr = await Calculator.calculateDataRequirements(measureBundle);
+  const dr = Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  const a = await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
-  return a;
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
 }
 
 /**
  * takes in data requirements and creates a URL to query bulk data server, then queries it
  * @param requirements : dataRequirements as output from fqm-execution
  */
-export async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
-  const params = await getDataRequirementsQueries(requirements);
+async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
+  const params = getDataRequirementsQueries(requirements);
   const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
-  const a = await queryBulkDataServer(url);
-  return a;
+  return await queryBulkDataServer(url);
 }
 
 //retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
