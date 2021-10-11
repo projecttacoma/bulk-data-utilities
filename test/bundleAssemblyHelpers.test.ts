@@ -3,6 +3,7 @@ import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
 import testTransactionBundle from './fixtures/testFiles/testTransactionBundle.json';
+import { populateDB } from '../src/utils/ndjsonParser';
 import fs from 'fs';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
@@ -194,6 +195,7 @@ describe('assembleTransactionBundleTests', () => {
         count: -1
       });
     });
+
     const tbString = fs.readFileSync(`${dir}/${tbExpectedFile}`, 'utf8');
     tbExpected.push(...JSON.parse(tbString));
     sortTBArr(tbExpected);
@@ -203,7 +205,8 @@ describe('assembleTransactionBundleTests', () => {
     const tbExpected: TransactionBundle[] = [];
     beforeEach(() => init('./test/fixtures/testFiles', exampleBulkDataResponses, tbExpected));
     test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
-      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(exampleBulkDataResponses, ':memory:');
+      const DB = await populateDB(exampleBulkDataResponses, ':memory:');
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(DB);
       sortTBArr(actual);
       expect(actual).toEqual(tbExpected);
     });
@@ -214,7 +217,8 @@ describe('assembleTransactionBundleTests', () => {
     const tbExpected: TransactionBundle[] = [];
     beforeEach(() => init('./test/fixtures/ndjsonResources/simple', exampleBulkDataResponses, tbExpected));
     test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
-      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(exampleBulkDataResponses, ':memory:');
+      const DB = await populateDB(exampleBulkDataResponses, ':memory:');
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(DB);
       sortTBArr(actual);
       expect(actual).toEqual(tbExpected);
     });
@@ -225,7 +229,8 @@ describe('assembleTransactionBundleTests', () => {
     const tbExpected: TransactionBundle[] = [];
     beforeEach(() => init('./test/fixtures/ndjsonDisconnected', exampleBulkDataResponses, tbExpected));
     test('assembleTransactionBundle correctly executes cleanupBundle and incoming refs', async () => {
-      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(exampleBulkDataResponses, ':memory:');
+      const DB = await populateDB(exampleBulkDataResponses, ':memory:');
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(DB);
       sortTBArr(actual);
       expect(actual).toEqual(tbExpected);
     });
