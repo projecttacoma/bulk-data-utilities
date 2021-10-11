@@ -1,6 +1,7 @@
 import * as ndjsonParser from './ndjsonParser';
 import { TransactionBundle } from '../types/TransactionBundle';
 import * as sqlite from 'sqlite';
+import { BulkDataResponse } from '../types/RequirementsQueryTypes';
 
 /**
  * Uses SQL query to retrieve all the Patient resource ids from the fhir resource
@@ -180,12 +181,12 @@ export async function addDisconnectedResources(
  * server
  */
 export async function assembleTransactionBundle(
-  ndjsonDirectory: string,
-  location: string
+  BulkDataResponses: BulkDataResponse[],
+  DBlocation: string
 ): Promise<TransactionBundle[]> {
   const bundleArray: TransactionBundle[] = [];
   const addedResources: Set<string> = new Set();
-  const DB = await ndjsonParser.populateDB(ndjsonDirectory, location);
+  const DB = await ndjsonParser.populateDB(BulkDataResponses, DBlocation);
   // get all patient Ids from database
   const patientIds = await getAllPatientIds(DB);
   const patientPromises = patientIds.map(async patientId => {
@@ -221,6 +222,3 @@ export async function assembleTransactionBundle(
   }
   return bundleArray;
 }
-assembleTransactionBundle('./test/fixtures/convertedResources', ':memory:').then(res =>
-  console.log(JSON.stringify(res, null, 4))
-);

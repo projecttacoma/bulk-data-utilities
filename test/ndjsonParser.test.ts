@@ -6,6 +6,10 @@ import {
   populateDB
 } from '../src/utils/ndjsonParser';
 
+import MockAdapter from 'axios-mock-adapter';
+import axios from 'axios';
+import fs from 'fs';
+
 const OBJECT_WITH_NESTED_REFERENCE = {
   resourceType: 'Patient',
   reference: 'reference1',
@@ -161,12 +165,61 @@ describe('test ndjson parser functions', () => {
       'Error: Unresolved reference from Encounter/E4 to Practitioner/PR2'
     );
   });
+});
 
-  test('populateDB creates database with correct info', async () => {
-    const db = await populateDB('test/fixtures/testFiles', ':memory:');
-    const fhirResources = await db.all('SELECT * FROM "fhir_resources";');
-    const references = await db.all('SELECT * FROM "local_references";');
-    expect(fhirResources).toEqual(EXPECTED_POPULATE_DB_RESOURCES);
-    expect(references).toEqual(EXPECTED_POPULATE_DB_REFERENCES);
+const mock = new MockAdapter(axios);
+
+describe('populateDB tests', () => {
+  beforeAll(() => {
+    const encounters = fs.readFileSync('./test/fixtures/testFiles/testEncounter.ndjson', 'utf8');
+    const patients = fs.readFileSync('./test/fixtures/testFiles/testPatient.ndjson', 'utf8');
+    const practitioners = fs.readFileSync('./test/fixtures/testFiles/testPractitioner.ndjson', 'utf8');
+    mock.onGet('test_url1').reply(200, encounters);
+    mock.onGet('test_url2').reply(200, patients);
+    mock.onGet('test_url3').reply(200, practitioners);
+  });
+  test('PopulateDB correctly populates DB from urls', async () => {
+    const locations = [
+      {
+        url: 'test_url1',
+        type: 'Encounter',
+        count: 2
+      },
+      {
+        url: 'test_url2',
+        type: 'Patient',
+        count: 1
+      },
+      {
+        url: 'test_url3',
+        type: 'Practitioner',
+        count: 1
+      }
+    ];
+    // To be used in sorting the output from the fhir_resource table
+    const compareResource = (
+      a: { resource_id: string; fhir_type: string; resource_json: string },
+      b: { resource_id: string; fhir_type: string; resource_json: string }
+    ) => {
+      return a.resource_id > b.resource_id ? 1 : -1;
+    };
+
+    // To be used in sorting the output from the local_references table
+    const compareReference = (
+      a: { origin_resource_id: string; reference_id: string },
+      b: { origin_resource_id: string; reference_id: string }
+    ) => {
+      if (parseInt(a.origin_resource_id) > parseInt(b.origin_resource_id)) {
+        return 1;
+      }
+      return a.reference_id > b.reference_id ? 1 : -1;
+    };
+    const db = await populateDB(locations, ':memory:');
+    expect((await db.all('SELECT * FROM fhir_resources')).sort(compareResource)).toEqual(
+      EXPECTED_POPULATE_DB_RESOURCES.sort(compareResource)
+    );
+    expect((await db.all('SELECT * FROM local_references')).sort(compareReference)).toEqual(
+      EXPECTED_POPULATE_DB_REFERENCES.sort(compareReference)
+    );
   });
 });

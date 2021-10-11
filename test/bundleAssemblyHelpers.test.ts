@@ -3,8 +3,11 @@ import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
 import testTransactionBundle from './fixtures/testFiles/testTransactionBundle.json';
-import testTransactionBundleArray from './fixtures/ndjsonResources/simple/simpleOutputBundle.json';
-import disconnectedBundle from './fixtures/ndjsonDisconnected/disconnectedBundle.json';
+import fs from 'fs';
+import MockAdapter from 'axios-mock-adapter';
+import axios from 'axios';
+import { BulkDataResponse } from '../src/types/RequirementsQueryTypes';
+import { TransactionBundle } from '../src/types/TransactionBundle';
 
 async function setupTestDB() {
   // create in-memory DB
@@ -149,26 +152,82 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
 
     const resourceIds = ['1', '2', '3', '4'];
     const actual = await bundleAssemblyHelpers.createTransactionBundle(db, resourceIds);
-    expect(actual).toEqual(testTransactionBundle);
+    expect(actual).toEqual(testTransactionBundle[0]);
+  });
+});
+
+const mock = new MockAdapter(axios);
+const compareEntries = (a: any, b: any) => (a.resource.id > b.resource.id ? 1 : -1);
+const compareTBs = (a: any, b: any) => {
+  if (a.entry.length !== b.entry.length) {
+    return a.entry.length - b.entry.length;
+  }
+  return a.entry.reduce((acc: number, aTBEntry: any, index: number) => {
+    if (acc === 0) {
+      acc = aTBEntry.resource.id > b.entry[index].resource.id ? 1 : -1;
+    }
+    return acc;
+  }, 0);
+};
+const sortTBArr = (tbArr: TransactionBundle[]) => {
+  tbArr.forEach(tb => tb.entry.sort(compareEntries));
+  tbArr.sort(compareTBs);
+};
+
+describe('assembleTransactionBundleTests', () => {
+  const init = (dir: string, bulkDataResponses: BulkDataResponse[], tbExpected: TransactionBundle[]) => {
+    const files = fs.readdirSync(dir);
+    let tbExpectedFile = '';
+    const ndjsonFnames = files.filter((fname: string) => {
+      if (fname.slice(-5) === '.json') {
+        tbExpectedFile = fname;
+      }
+      return fname.slice(-7) === '.ndjson';
+    });
+
+    ndjsonFnames.forEach((fname: string, i: number) => {
+      const resources = fs.readFileSync(`${dir}/${fname}`, 'utf8');
+      mock.onGet(`test_url_${i}`).reply(200, resources);
+      bulkDataResponses.push({
+        url: `test_url_${i}`,
+        type: 'EXAMPLE',
+        count: -1
+      });
+    });
+    const tbString = fs.readFileSync(`${dir}/${tbExpectedFile}`, 'utf8');
+    tbExpected.push(...JSON.parse(tbString));
+    sortTBArr(tbExpected);
+  };
+  describe('test examples in fixtures/testFiles', () => {
+    const exampleBulkDataResponses: BulkDataResponse[] = [];
+    const tbExpected: TransactionBundle[] = [];
+    beforeEach(() => init('./test/fixtures/testFiles', exampleBulkDataResponses, tbExpected));
+    test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(exampleBulkDataResponses, ':memory:');
+      sortTBArr(actual);
+      expect(actual).toEqual(tbExpected);
+    });
   });
 
-  test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle('test/fixtures/testFiles', ':memory:');
-    expect(actual).toEqual([testTransactionBundle]);
+  describe('test examples in fixtures/ndjsonResources/simple', () => {
+    const exampleBulkDataResponses: BulkDataResponse[] = [];
+    const tbExpected: TransactionBundle[] = [];
+    beforeEach(() => init('./test/fixtures/ndjsonResources/simple', exampleBulkDataResponses, tbExpected));
+    test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(exampleBulkDataResponses, ':memory:');
+      sortTBArr(actual);
+      expect(actual).toEqual(tbExpected);
+    });
   });
 
-  test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle(
-      'test/fixtures/ndjsonResources/simple',
-      ':memory:'
-    );
-    expect(actual).toEqual(testTransactionBundleArray);
-  });
-  test('assembleTransactionBundle correctly executes cleanupBundle and incoming refs', async () => {
-    const actual = await bundleAssemblyHelpers.assembleTransactionBundle(
-      'test/fixtures/ndjsonDisconnected',
-      ':memory:'
-    );
-    expect(actual).toEqual(disconnectedBundle);
+  describe('test examples in fixtures/ndjsonDisconnected', () => {
+    const exampleBulkDataResponses: BulkDataResponse[] = [];
+    const tbExpected: TransactionBundle[] = [];
+    beforeEach(() => init('./test/fixtures/ndjsonDisconnected', exampleBulkDataResponses, tbExpected));
+    test('assembleTransactionBundle correctly executes cleanupBundle and incoming refs', async () => {
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(exampleBulkDataResponses, ':memory:');
+      sortTBArr(actual);
+      expect(actual).toEqual(tbExpected);
+    });
   });
 });
