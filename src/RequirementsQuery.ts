@@ -2,7 +2,7 @@ import { Calculator } from 'fqm-execution';
 import fs from 'fs';
 import axios, { AxiosError } from 'axios';
 import { URLSearchParams } from 'url';
-import { DRQuery, APIParams } from './types/RequirementsQueryTypes';
+import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
 
 const headers = {
   Accept: 'application/fhir+json',
@@ -103,7 +103,7 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-export async function queryBulkDataServer(url: string): Promise<{ output: any; error?: string }> {
+export async function queryBulkDataServer(url: string): Promise<{ output: BulkDataResponse[] | null; error?: string }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
@@ -121,7 +121,8 @@ function sleep(ms: number) {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-export async function probeServer(url: string): Promise<{ output: any }> {
+
+export async function probeServer(url: string): Promise<{ output: BulkDataResponse[] }> {
   let results = await axios.get(url, { headers });
   while (results.status === 202) {
     await sleep(1000);
@@ -152,7 +153,11 @@ async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string, expo
  * @param measureBundle: measure bundle object
  * @param exportURL: export server URL string
  */
-export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle, exportURL: string) {
+
+export async function retrieveBulkDataFromMeasureBundle(
+  measureBundle: fhir4.Bundle,
+  exportURL: string
+): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const dr = Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
@@ -165,10 +170,11 @@ export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bun
  * @param requirements: dataRequirements as output from fqm-execution
  * @param exportURL: export server URL string
  */
+
 async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
   exportURL: string
-): Promise<{ results?: any; error?: string }> {
+): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const params = getDataRequirementsQueries(requirements);
   const url = `${exportURL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   return await queryBulkDataServer(url);
