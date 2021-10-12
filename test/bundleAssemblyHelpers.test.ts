@@ -206,7 +206,7 @@ describe('assembleTransactionBundleTests', () => {
     beforeEach(() => init('./test/fixtures/testFiles', exampleBulkDataResponses, tbExpected));
     test('assembleTransactionBundle returns transaction bundle of patient resource and all related resources that reference it/each other', async () => {
       const DB = await populateDB(exampleBulkDataResponses, ':memory:');
-      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(DB);
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundles(DB);
       sortTBArr(actual);
       expect(actual).toEqual(tbExpected);
     });
@@ -218,7 +218,7 @@ describe('assembleTransactionBundleTests', () => {
     beforeEach(() => init('./test/fixtures/ndjsonResources/simple', exampleBulkDataResponses, tbExpected));
     test('assembleTransactionBundle returns array of transaction bundles when we have multiple patients', async () => {
       const DB = await populateDB(exampleBulkDataResponses, ':memory:');
-      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(DB);
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundles(DB);
       sortTBArr(actual);
       expect(actual).toEqual(tbExpected);
     });
@@ -230,7 +230,7 @@ describe('assembleTransactionBundleTests', () => {
     beforeEach(() => init('./test/fixtures/ndjsonDisconnected', exampleBulkDataResponses, tbExpected));
     test('assembleTransactionBundle correctly executes cleanupBundle and incoming refs', async () => {
       const DB = await populateDB(exampleBulkDataResponses, ':memory:');
-      const actual = await bundleAssemblyHelpers.assembleTransactionBundle(DB);
+      const actual = await bundleAssemblyHelpers.assembleTransactionBundles(DB);
       sortTBArr(actual);
       expect(actual).toEqual(tbExpected);
     });

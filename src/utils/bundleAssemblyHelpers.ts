@@ -181,7 +181,7 @@ export async function addDisconnectedResources(
  * @returns TransactionBundle promise that can be uploaded to test
  * server
  */
-export async function assembleTransactionBundle(DB: sqlite.Database): Promise<TransactionBundle[]> {
+export async function assembleTransactionBundles(DB: sqlite.Database): Promise<TransactionBundle[]> {
   const bundleArray: TransactionBundle[] = [];
   const addedResources: Set<string> = new Set();
   // get all patient Ids from database
