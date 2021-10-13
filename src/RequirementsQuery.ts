@@ -9,6 +9,13 @@ const headers = {
   Prefer: 'respond-async'
 };
 
+/**
+ * Temporary Solution: this line gets rid of the self signed cert
+ * errors that come up in the bulk data import reference server
+ *
+ * TODO: Remove this once we make changes to the reference
+ * server
+ */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
@@ -61,7 +68,6 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
       bulkImport in deqm-test-server. Otherwise, errors arise since
       the $export reference server does not support _typeFilter
       */
-
       // if (dr?.codeFilter?.[0]?.code?.[0]) {
       //   const key = dr?.codeFilter?.[0].path;
       //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
@@ -122,7 +128,7 @@ export async function probeServer(url: string): Promise<void> {
     results = await axios.get(url, { headers });
   }
   if (results.status === 500) {
-    console.error(results.data);
+    throw new Error('Received 500 status: Internal Server Error');
   }
   return results.data.output;
 }
