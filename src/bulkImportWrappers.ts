@@ -5,5 +5,7 @@ import { assembleTransactionBundles } from './utils/bundleAssemblyHelpers';
 export async function executeBulkImport(mb: fhir4.Bundle, location: string) {
   const bulkDataResponses = await retrieveBulkDataFromMeasureBundle(mb);
   const db = await populateDB(bulkDataResponses, location);
-  return await assembleTransactionBundles(db);
+  const tbArr = await assembleTransactionBundles(db);
+  await db.close();
+  return tbArr;
 }

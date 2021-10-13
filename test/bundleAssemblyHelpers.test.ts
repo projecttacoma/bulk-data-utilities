@@ -158,7 +158,11 @@ describe('Testing functions in bundleAssemblyHelpers.ts', () => {
 });
 
 const mock = new MockAdapter(axios);
+
+// Simple function used to sort the entries array of a transaction bundle
 const compareEntries = (a: any, b: any) => (a.resource.id > b.resource.id ? 1 : -1);
+
+// Simple function to sort an array of transaction bundles
 const compareTBs = (a: any, b: any) => {
   if (a.entry.length !== b.entry.length) {
     return a.entry.length - b.entry.length;
