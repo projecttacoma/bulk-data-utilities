@@ -1,8 +1,5 @@
-import * as ndjsonParser from './ndjsonParser';
 import { TransactionBundle } from '../types/TransactionBundle';
 import * as sqlite from 'sqlite';
-import { BulkDataResponse } from '../types/RequirementsQueryTypes';
-import { sqlite3 } from 'sqlite3';
 
 /**
  * Uses SQL query to retrieve all the Patient resource ids from the fhir resource
