@@ -108,7 +108,7 @@ async function queryBulkDataServer(url: string): Promise<void | { results?: any;
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch (err) {
-    return { error: (err as AxiosError).response?.data || (err as AxiosError).message };
+    return { results: null, error: (err as AxiosError).response?.data || (err as AxiosError).message };
   }
 }
 
