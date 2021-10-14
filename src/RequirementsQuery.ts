@@ -18,7 +18,8 @@ const headers = {
  */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json';
+//'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 // Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 export const API_URL =
@@ -68,13 +69,13 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
       bulkImport in deqm-test-server. Otherwise, errors arise since
       the $export reference server does not support _typeFilter
       */
-      // if (dr?.codeFilter?.[0]?.code?.[0]) {
-      //   const key = dr?.codeFilter?.[0].path;
-      //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
-      // } else if (dr?.codeFilter?.[0]?.valueSet) {
-      //   const key = `${dr?.codeFilter?.[0].path}:in`;
-      //   key && (q.params[key] = dr.codeFilter[0].valueSet);
-      // }
+      if (dr?.codeFilter?.[0]?.code?.[0]) {
+        const key = dr?.codeFilter?.[0].path;
+        key && (q.params[key] = dr.codeFilter[0].code[0].code);
+      } else if (dr?.codeFilter?.[0]?.valueSet) {
+        const key = `${dr?.codeFilter?.[0].path}:in`;
+        key && (q.params[key] = dr.codeFilter[0].valueSet);
+      }
       queries.push(q);
     }
   });
@@ -136,37 +137,44 @@ export async function probeServer(url: string): Promise<void> {
 /**
  * Parses a measure bundle based on the local path and queries a bulk data server for the data requirements
  * @param measureBundle: path to a local measure bundle
+ * @param exportURL: export server URL string
  */
-async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string) {
+async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string, exportURL: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
   console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportURL);
 }
 
 /**
  * Parses a measure bundle object and queries a bulk data server for the data requirements
  * @param measureBundle: measure bundle object
+ * @param exportURL: export server URL string
  */
-export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle) {
+export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle, exportURL: string) {
   const dr = Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportURL);
 }
 
 /**
  * takes in data requirements and creates a URL to query bulk data server, then queries it
- * @param requirements : dataRequirements as output from fqm-execution
+ * @param requirements: dataRequirements as output from fqm-execution
+ * @param exportURL: export server URL string
  */
-async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
+async function retrieveBulkDataFromRequirements(
+  requirements: fhir4.DataRequirement[],
+  exportURL: string
+): Promise<void> {
   const params = getDataRequirementsQueries(requirements);
-  const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
+  const url = `${exportURL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
+  console.log(url);
   return await queryBulkDataServer(url);
 }
 
-//retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
-//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
+//retrieveBulkDataFromMeasureBundlePath(exampleMeasureBundle, API_URL); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
+//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS, API_URL); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
