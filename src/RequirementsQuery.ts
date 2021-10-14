@@ -69,13 +69,13 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
       bulkImport in deqm-test-server. Otherwise, errors arise since
       the $export reference server does not support _typeFilter
       */
-      if (dr?.codeFilter?.[0]?.code?.[0]) {
-        const key = dr?.codeFilter?.[0].path;
-        key && (q.params[key] = dr.codeFilter[0].code[0].code);
-      } else if (dr?.codeFilter?.[0]?.valueSet) {
-        const key = `${dr?.codeFilter?.[0].path}:in`;
-        key && (q.params[key] = dr.codeFilter[0].valueSet);
-      }
+      // if (dr?.codeFilter?.[0]?.code?.[0]) {
+      //   const key = dr?.codeFilter?.[0].path;
+      //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
+      // } else if (dr?.codeFilter?.[0]?.valueSet) {
+      //   const key = `${dr?.codeFilter?.[0].path}:in`;
+      //   key && (q.params[key] = dr.codeFilter[0].valueSet);
+      // }
       queries.push(q);
     }
   });
