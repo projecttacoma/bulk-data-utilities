@@ -167,6 +167,9 @@ const compareTBs = (a: any, b: any) => {
   if (a.entry.length !== b.entry.length) {
     return a.entry.length - b.entry.length;
   }
+  // If they have the same length, sort the one with the higher first entry id.
+  // Since the entry array will already be sorted at this point this should always
+  // produce the same results.
   return a.entry.reduce((acc: number, aTBEntry: any, index: number) => {
     if (acc === 0) {
       acc = aTBEntry.resource.id > b.entry[index].resource.id ? 1 : -1;
@@ -174,12 +177,15 @@ const compareTBs = (a: any, b: any) => {
     return acc;
   }, 0);
 };
+
+// Wrapper for sorting the tb array
 const sortTBArr = (tbArr: TransactionBundle[]) => {
   tbArr.forEach(tb => tb.entry.sort(compareEntries));
   tbArr.sort(compareTBs);
 };
 
 describe('assembleTransactionBundleTests', () => {
+  // Given a directory, populates BulkDataResponse, mocks out axios requests, and pulls expected output transqction bundle
   const init = (dir: string, bulkDataResponses: BulkDataResponse[], tbExpected: TransactionBundle[]) => {
     const files = fs.readdirSync(dir);
     let tbExpectedFile = '';
