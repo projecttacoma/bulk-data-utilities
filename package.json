@@ -1,8 +1,8 @@
 {
-  "name": "typescript-node-starter",
+  "name": "bulk-data-utilities",
   "version": "0.0.1",
   "description": "",
-  "main": "build/app.js",
+  "main": "build/index.js",
   "files": [
     "build/*"
   ],
@@ -37,7 +37,8 @@
     "prettier": "prettier --check \"**/*.{js,ts}\"",
     "prettier:fix": "prettier --write \"**/*.{js,ts}\"",
     "test": "jest --silent",
-    "check": "npm run test && npm run lint && npm run prettier"
+    "check": "npm run test && npm run lint && npm run prettier",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",

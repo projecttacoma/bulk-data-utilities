@@ -1,18 +1,27 @@
 import { Calculator } from 'fqm-execution';
 import fs from 'fs';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { URLSearchParams } from 'url';
-import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
+import { DRQuery, APIParams } from './types/RequirementsQueryTypes';
 
 const headers = {
   Accept: 'application/fhir+json',
   Prefer: 'respond-async'
 };
 
-const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+/**
+ * Temporary Solution: this line gets rid of the self signed cert
+ * errors that come up in the bulk data import reference server
+ *
+ * TODO: Remove this once we make changes to the reference
+ * server
+ */
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-//Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
-const API_URL =
+const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+
+// Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
+export const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
 const EXAMPLE_REQUIREMENTS = [
@@ -49,17 +58,23 @@ function parseBundle(filePath: string): fhir4.Bundle {
 export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequirement[]): APIParams => {
   const queries: DRQuery[] = [];
 
-  //converts dataRequirements output into a format easily parsed into URL params
+  // converts dataRequirements output into a format easily parsed into URL params
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
-      if (dr?.codeFilter?.[0]?.code?.[0]) {
-        const key = dr?.codeFilter?.[0].path;
-        key && (q.params[key] = dr.codeFilter[0].code[0].code);
-      } else if (dr?.codeFilter?.[0]?.valueSet) {
-        const key = `${dr?.codeFilter?.[0].path}:in`;
-        key && (q.params[key] = dr.codeFilter[0].valueSet);
-      }
+
+      /*
+      NOTE: codeFilter code has been commented out in order to test
+      bulkImport in deqm-test-server. Otherwise, errors arise since
+      the $export reference server does not support _typeFilter
+      */
+      // if (dr?.codeFilter?.[0]?.code?.[0]) {
+      //   const key = dr?.codeFilter?.[0].path;
+      //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
+      // } else if (dr?.codeFilter?.[0]?.valueSet) {
+      //   const key = `${dr?.codeFilter?.[0].path}:in`;
+      //   key && (q.params[key] = dr.codeFilter[0].valueSet);
+      // }
       queries.push(q);
     }
   });
@@ -89,12 +104,16 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * @param url: A bulk data export FHIR server url with params
  */
 async function queryBulkDataServer(url: string): Promise<void> {
-  await axios
-    .get(url, { headers })
-    .then(resp => {
-      probeServer(resp.headers['content-location']);
-    })
-    .catch(e => console.error(JSON.stringify(e.response.data, null, 4)));
+  try {
+    const resp = await axios.get(url, { headers });
+    return await probeServer(resp.headers['content-location']);
+  } catch (err) {
+    return (err as AxiosError).response?.data;
+  }
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -102,29 +121,41 @@ async function queryBulkDataServer(url: string): Promise<void> {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-async function probeServer(url: string): Promise<void> {
-  const results = await axios.get(url, { headers });
-  if (results.status === 202) {
-    setTimeout(() => probeServer(url), 1000);
-  } else if (results.status === 200) {
-    // instead of console log, call retriever
-    console.log(results.data.output);
-  } else if (results.status === 500) {
-    console.error(results.data);
+export async function probeServer(url: string): Promise<void> {
+  let results = await axios.get(url, { headers });
+  while (results.status === 202) {
+    await sleep(1000);
+    results = await axios.get(url, { headers });
   }
+  if (results.status === 500) {
+    throw new Error('Received 500 status: Internal Server Error');
+  }
+  return results.data.output;
 }
 
 /**
- * parses a measure bundle based on the local path and queries a bulk data server for the data requirements
+ * Parses a measure bundle based on the local path and queries a bulk data server for the data requirements
  * @param measureBundle: path to a local measure bundle
  */
-async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
+async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
   console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+}
+
+/**
+ * Parses a measure bundle object and queries a bulk data server for the data requirements
+ * @param measureBundle: measure bundle object
+ */
+export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle) {
+  const dr = Calculator.calculateDataRequirements(measureBundle);
+  if (!dr.results.dataRequirement) {
+    dr.results.dataRequirement = [];
+  }
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
 }
 
 /**
@@ -134,9 +165,7 @@ async function retrieveBulkDataFromMeasureBundle(measureBundle: string) {
 async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
   const params = getDataRequirementsQueries(requirements);
   const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
-  console.log(url);
-  console.log(JSON.stringify(params, null, 4));
-  queryBulkDataServer(url);
+  return await queryBulkDataServer(url);
 }
 
 //retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
