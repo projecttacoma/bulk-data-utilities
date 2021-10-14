@@ -103,12 +103,12 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-async function queryBulkDataServer(url: string): Promise<void | { results?: any; error?: AxiosError }> {
+async function queryBulkDataServer(url: string): Promise<void | { output: any; error?: AxiosError }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch (err) {
-    return { results: null, error: (err as AxiosError).response?.data || (err as AxiosError).message };
+    return { output: null, error: (err as AxiosError).response?.data || (err as AxiosError).message };
   }
 }
 
@@ -121,7 +121,7 @@ function sleep(ms: number) {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-export async function probeServer(url: string): Promise<void | { results?: any; error?: AxiosError }> {
+export async function probeServer(url: string): Promise<void | { output: any; error?: AxiosError }> {
   let results = await axios.get(url, { headers });
   while (results.status === 202) {
     await sleep(1000);
@@ -130,7 +130,7 @@ export async function probeServer(url: string): Promise<void | { results?: any; 
   if (results.status === 500) {
     throw new Error('Received 500 status: Internal Server Error');
   }
-  return { results: results.data.output };
+  return { output: results.data.output };
 }
 
 /**
