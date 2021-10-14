@@ -18,8 +18,7 @@ const headers = {
  */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json';
-//'../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 // Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 export const API_URL =
@@ -104,12 +103,12 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-async function queryBulkDataServer(url: string): Promise<void> {
+async function queryBulkDataServer(url: string): Promise<void | { results?: any; error?: AxiosError }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch (err) {
-    return (err as AxiosError).response?.data;
+    return { error: (err as AxiosError).response?.data || (err as AxiosError).message };
   }
 }
 
@@ -122,7 +121,7 @@ function sleep(ms: number) {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-export async function probeServer(url: string): Promise<void> {
+export async function probeServer(url: string): Promise<void | { results?: any; error?: AxiosError }> {
   let results = await axios.get(url, { headers });
   while (results.status === 202) {
     await sleep(1000);
@@ -131,7 +130,7 @@ export async function probeServer(url: string): Promise<void> {
   if (results.status === 500) {
     throw new Error('Received 500 status: Internal Server Error');
   }
-  return results.data.output;
+  return { results: results.data.output };
 }
 
 /**
@@ -169,10 +168,9 @@ export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bun
 async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
   exportURL: string
-): Promise<void> {
+): Promise<void | { results?: any; error?: AxiosError }> {
   const params = getDataRequirementsQueries(requirements);
   const url = `${exportURL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
-  console.log(url);
   return await queryBulkDataServer(url);
 }
 
