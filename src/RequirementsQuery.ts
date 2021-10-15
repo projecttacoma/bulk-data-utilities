@@ -18,7 +18,7 @@ const headers = {
  */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 // Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 export const API_URL =
@@ -103,7 +103,7 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-async function queryBulkDataServer(url: string): Promise<void | { output: any; error?: AxiosError }> {
+export async function queryBulkDataServer(url: string): Promise<void | { output: any; error?: AxiosError }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
