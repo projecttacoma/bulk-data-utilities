@@ -103,7 +103,7 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-export async function queryBulkDataServer(url: string): Promise<void | { output: any; error?: AxiosError }> {
+export async function queryBulkDataServer(url: string): Promise<{ output: any; error?: AxiosError }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
@@ -121,7 +121,7 @@ function sleep(ms: number) {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-export async function probeServer(url: string): Promise<void | { output: any; error?: AxiosError }> {
+export async function probeServer(url: string): Promise<{ output: any; error?: AxiosError }> {
   let results = await axios.get(url, { headers });
   while (results.status === 202) {
     await sleep(1000);
@@ -168,7 +168,7 @@ export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bun
 async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
   exportURL: string
-): Promise<void | { results?: any; error?: AxiosError }> {
+): Promise<{ results?: any; error?: AxiosError }> {
   const params = getDataRequirementsQueries(requirements);
   const url = `${exportURL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   return await queryBulkDataServer(url);
