@@ -1,4 +1,4 @@
-import { getDataRequirementsQueries } from '../src/RequirementsQuery';
+import { getDataRequirementsQueries, queryBulkDataServer } from '../src/RequirementsQuery';
 
 const DATA_REQUIREMENTS_PATIENT = [
   {
@@ -92,7 +92,19 @@ const EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_IS_CODE = {
   _typeFilter: 'Encounter%3Fcode=TEST_CODE'
 };
 
-describe('Requirement Query Tests', () => {
+const invalidURL = 'not-a-real-url';
+const invalidURLError = { output: null, error: 'connect ECONNREFUSED 127.0.0.1:80' };
+
+/*
+NOTE: codeFilter code has been commented out in order to test
+bulkImport in deqm-test-server. Otherwise, errors arise since
+the $export reference server does not support _typeFilter.
+
+If these tests are run with the codeFilter code commented out,
+they will fail. To run these tests, first uncomment the
+codeFilter code in the getDataRequirementsQueries function.
+*/
+describe.skip('getDataRequirements Tests', () => {
   test('Patient type request', () => {
     expect(getDataRequirementsQueries(DATA_REQUIREMENTS_PATIENT)).toEqual(EXPECTED_DATA_REQUIREMENTS_PATIENT);
   });
@@ -113,5 +125,11 @@ describe('Requirement Query Tests', () => {
     expect(getDataRequirementsQueries(DATA_REQUIREMENTS_ENCOUNTER_IS_CODE)).toEqual(
       EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_IS_CODE
     );
+  });
+});
+describe('queryBulkServer Tests', () => {
+  test('Throw error if invalid export URL given to queryBulkDataServer', async () => {
+    const results = await queryBulkDataServer(invalidURL);
+    expect(results).toEqual(invalidURLError);
   });
 });

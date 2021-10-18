@@ -18,7 +18,7 @@ const headers = {
  */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const exampleMeasureBundle = '../EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
+const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 // Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 export const API_URL =
@@ -103,12 +103,12 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-async function queryBulkDataServer(url: string): Promise<void> {
+export async function queryBulkDataServer(url: string): Promise<{ output: any; error?: string }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch (err) {
-    return (err as AxiosError).response?.data;
+    return { output: null, error: (err as AxiosError).message };
   }
 }
 
@@ -121,7 +121,7 @@ function sleep(ms: number) {
  * @param url: A content-location url retrieved by queryBulkDataServer which will
  * eventually contain the output data when processing completes
  */
-export async function probeServer(url: string): Promise<void> {
+export async function probeServer(url: string): Promise<{ output: any }> {
   let results = await axios.get(url, { headers });
   while (results.status === 202) {
     await sleep(1000);
@@ -130,43 +130,49 @@ export async function probeServer(url: string): Promise<void> {
   if (results.status === 500) {
     throw new Error('Received 500 status: Internal Server Error');
   }
-  return results.data.output;
+  return { output: results.data.output };
 }
 
 /**
  * Parses a measure bundle based on the local path and queries a bulk data server for the data requirements
  * @param measureBundle: path to a local measure bundle
+ * @param exportURL: export server URL string
  */
-async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string) {
+async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string, exportURL: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
   console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportURL);
 }
 
 /**
  * Parses a measure bundle object and queries a bulk data server for the data requirements
  * @param measureBundle: measure bundle object
+ * @param exportURL: export server URL string
  */
-export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle) {
+export async function retrieveBulkDataFromMeasureBundle(measureBundle: fhir4.Bundle, exportURL: string) {
   const dr = Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportURL);
 }
 
 /**
  * takes in data requirements and creates a URL to query bulk data server, then queries it
- * @param requirements : dataRequirements as output from fqm-execution
+ * @param requirements: dataRequirements as output from fqm-execution
+ * @param exportURL: export server URL string
  */
-async function retrieveBulkDataFromRequirements(requirements: fhir4.DataRequirement[]): Promise<void> {
+async function retrieveBulkDataFromRequirements(
+  requirements: fhir4.DataRequirement[],
+  exportURL: string
+): Promise<{ results?: any; error?: string }> {
   const params = getDataRequirementsQueries(requirements);
-  const url = `${API_URL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
+  const url = `${exportURL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   return await queryBulkDataServer(url);
 }
 
-//retrieveBulkDataFromMeasureBundle(exampleMeasureBundle); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
-//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
+//retrieveBulkDataFromMeasureBundlePath(exampleMeasureBundle, API_URL); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
+//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS, API_URL); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
