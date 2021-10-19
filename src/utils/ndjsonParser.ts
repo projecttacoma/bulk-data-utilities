@@ -2,10 +2,11 @@
 
 import * as sqlite3 from 'sqlite3';
 import * as Walker from 'walk';
-import * as FS from 'fs';
 import * as Path from 'path';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
+import { BulkDataResponse } from '../types/RequirementsQueryTypes';
+import { retrieveNDJSONFromLocation } from './ndjsonRetriever';
 
 // Used to log number of resources inserted into the db
 let insertedResources = 0;
@@ -205,27 +206,21 @@ export function getLocalReferences(entry: any): string[] {
  * @param location a file path signifying where to store the created db
  * @returns a promise which resolves to a sqlite3 db
  */
-export async function populateDB(ndjsonDirectory: string, location: string): Promise<sqlite.Database> {
+export async function populateDB(exportOutput: BulkDataResponse[], location: string): Promise<sqlite.Database> {
   const DB: sqlite.Database = await createDatabase(location);
-  await forEachFile(
-    {
-      dir: ndjsonDirectory,
-      filter: (path: string) => path.endsWith('.ndjson')
-    },
-    async (path: string, fileStats: { name: string }, next: any): Promise<void> => {
-      const lines = FS.readFileSync(path, 'utf8');
-      if (lines) {
-        console.log(`Inserting resources from ${fileStats.name}...`);
-        const promises = lines
-          .trim()
-          .split(/\n/)
-          .map(async (line: string) => insertResourceIntoDB(DB, line));
-        await Promise.all(promises);
-        next();
-      }
-    }
-  );
+  // We want each ndjson file to be parse synchronously here to avoid overloading the memory
+  // This forces us to use a reduce which waits for the previous iteration to return before executing the next
+  await exportOutput.reduce(async (acc: any, locationInfo: BulkDataResponse) => {
+    const ndjsonResources = await retrieveNDJSONFromLocation(locationInfo);
 
+    const resourcePromises = ndjsonResources
+      .trim()
+      .split(/\n/)
+      .map(async resource => {
+        await insertResourceIntoDB(DB, resource);
+      });
+    await Promise.all(resourcePromises);
+  }, Promise.resolve());
   await checkReferences(DB);
   console.log('\nValidation complete');
   console.log(`${insertedResources} resources inserted in DB`);

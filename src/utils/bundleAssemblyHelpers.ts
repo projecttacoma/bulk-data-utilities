@@ -1,4 +1,3 @@
-import * as ndjsonParser from './ndjsonParser';
 import { TransactionBundle } from '../types/TransactionBundle';
 import * as sqlite from 'sqlite';
 
@@ -179,13 +178,9 @@ export async function addDisconnectedResources(
  * @returns TransactionBundle promise that can be uploaded to test
  * server
  */
-export async function assembleTransactionBundle(
-  ndjsonDirectory: string,
-  location: string
-): Promise<TransactionBundle[]> {
+export async function assembleTransactionBundles(DB: sqlite.Database): Promise<TransactionBundle[]> {
   const bundleArray: TransactionBundle[] = [];
   const addedResources: Set<string> = new Set();
-  const DB = await ndjsonParser.populateDB(ndjsonDirectory, location);
   // get all patient Ids from database
   const patientIds = await getAllPatientIds(DB);
   const patientPromises = patientIds.map(async patientId => {
@@ -221,6 +216,3 @@ export async function assembleTransactionBundle(
   }
   return bundleArray;
 }
-assembleTransactionBundle('./test/fixtures/convertedResources', ':memory:').then(res =>
-  console.log(JSON.stringify(res, null, 4))
-);
