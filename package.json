@@ -12,9 +12,7 @@
     "path": "^0.12.7",
     "sqlite": "^4.0.23",
     "sqlite3": "^5.0.2",
-    "walk": "^2.3.14"
-  },
-  "devDependencies": {
+    "walk": "^2.3.14",
     "@types/fhir": "0.0.34",
     "@types/jest": "^27.0.0",
     "@types/node": "^14.17.7",
@@ -41,6 +39,7 @@
     "check": "npm run test && npm run lint && npm run prettier",
     "prepare": "npm run build"
   },
+  "install": "npm run build",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mgramigna/typescript-node-starter.git"
