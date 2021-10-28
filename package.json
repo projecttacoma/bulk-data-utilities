@@ -39,7 +39,7 @@
     "check": "npm run test && npm run lint && npm run prettier",
     "prepare": "npm run build"
   },
-  "install": "npm run build",
+  "install": "tsc",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mgramigna/typescript-node-starter.git"
