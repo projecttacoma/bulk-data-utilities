@@ -180,5 +180,12 @@ async function retrieveBulkDataFromRequirements(
   return await queryBulkDataServer(url);
 }
 
+export async function retrieveAllBulkData(
+  exportURL: string
+): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
+  const url = `${exportURL}/$export?`;
+  return await queryBulkDataServer(url);
+}
+
 //retrieveBulkDataFromMeasureBundlePath(exampleMeasureBundle, API_URL); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
 //retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS, API_URL); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS
