@@ -1,13 +1,8 @@
 import { Calculator } from 'fqm-execution';
 import fs from 'fs';
-import axios, { AxiosError } from 'axios';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
-
-const headers = {
-  Accept: 'application/fhir+json',
-  Prefer: 'respond-async'
-};
+import { queryBulkDataServer } from './exportServerQueries';
 
 /**
  * Temporary Solution: this line gets rid of the self signed cert
@@ -99,42 +94,6 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
 };
 
 /**
- * sends initial request to bulk data export server and calls recurring poll function
- * to check on progress
- * @param url: A bulk data export FHIR server url with params
- */
-export async function queryBulkDataServer(url: string): Promise<{ output: BulkDataResponse[] | null; error?: string }> {
-  try {
-    const resp = await axios.get(url, { headers });
-    return await probeServer(resp.headers['content-location']);
-  } catch (err) {
-    return { output: null, error: (err as AxiosError).message };
-  }
-}
-
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Repeatedly checks the passed url (every second) until the request either fails or succeeds
- * @param url: A content-location url retrieved by queryBulkDataServer which will
- * eventually contain the output data when processing completes
- */
-
-export async function probeServer(url: string): Promise<{ output: BulkDataResponse[] }> {
-  let results = await axios.get(url, { headers });
-  while (results.status === 202) {
-    await sleep(1000);
-    results = await axios.get(url, { headers });
-  }
-  if (results.status === 500) {
-    throw new Error('Received 500 status: Internal Server Error');
-  }
-  return { output: results.data.output };
-}
-
-/**
  * Parses a measure bundle based on the local path and queries a bulk data server for the data requirements
  * @param measureBundle: path to a local measure bundle
  * @param exportURL: export server URL string
@@ -180,10 +139,15 @@ async function retrieveBulkDataFromRequirements(
   return await queryBulkDataServer(url);
 }
 
+/**
+ * Formats a request for all data on the given server and executes it
+ * @param {string} exportURL The url of the desired export server
+ * @returns An object containing an array of bulkDataResponses
+ */
 export async function retrieveAllBulkData(
   exportURL: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
-  const url = `${exportURL}/$export?`;
+  const url = `${exportURL}/$export`;
   return await queryBulkDataServer(url);
 }
 
