@@ -14,7 +14,6 @@ export async function executeBulkImport(
   } else {
     ({ output: bulkDataResponses } = await retrieveAllBulkData(exportUrl));
   }
-  console.log(bulkDataResponses);
   if (bulkDataResponses) {
     const db = await populateDB(bulkDataResponses, location);
     const tbArr = await assembleTransactionBundles(db);
@@ -22,7 +21,3 @@ export async function executeBulkImport(
     return tbArr;
   }
 }
-
-executeBulkImport('http://localhost:3000', ':memory:')
-  .then(res => console.log(res))
-  .catch(e => console.log(e.message));

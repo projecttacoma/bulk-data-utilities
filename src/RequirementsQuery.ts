@@ -100,7 +100,6 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
  */
 async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string, exportURL: string) {
   const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
-  console.log(JSON.stringify(dr.results.dataRequirement, null, 4));
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
@@ -147,7 +146,7 @@ async function retrieveBulkDataFromRequirements(
 export async function retrieveAllBulkData(
   exportURL: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
-  const url = `${exportURL}/$export`;
+  const url = `${exportURL}/$export?_type=Encounter,Condition,Location,Patient`;
   return await queryBulkDataServer(url);
 }
 

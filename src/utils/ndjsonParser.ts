@@ -72,8 +72,9 @@ export async function createDatabase(location: string): Promise<sqlite.Database>
   await DB.run(
     `CREATE TABLE "fhir_resources"(
             "fhir_type"     Text,
-            "resource_id"   Text PRIMARY KEY,
-            "resource_json" Text
+            "resource_id"   Text,
+            "resource_json" Text,
+            PRIMARY KEY("fhir_type", "resource_id")
         );`
   );
   await DB.run('DROP TABLE IF EXISTS "local_references"');
