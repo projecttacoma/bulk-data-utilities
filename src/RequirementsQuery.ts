@@ -146,7 +146,7 @@ async function retrieveBulkDataFromRequirements(
 export async function retrieveAllBulkData(
   exportURL: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
-  const url = `${exportURL}/$export?_type=Encounter,Condition,Location,Patient`;
+  const url = `${exportURL}/$export`;
   return await queryBulkDataServer(url);
 }
 
