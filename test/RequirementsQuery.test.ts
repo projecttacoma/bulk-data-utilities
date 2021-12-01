@@ -1,4 +1,5 @@
-import { getDataRequirementsQueries, queryBulkDataServer } from '../src/RequirementsQuery';
+import * as exportQueries from '../src/exportServerQueries';
+import { retrieveAllBulkData, getDataRequirementsQueries } from '../src/RequirementsQuery';
 
 const DATA_REQUIREMENTS_PATIENT = [
   {
@@ -92,9 +93,6 @@ const EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_IS_CODE = {
   _typeFilter: 'Encounter%3Fcode=TEST_CODE'
 };
 
-const invalidURL = 'not-a-real-url';
-const invalidURLError = { output: null, error: 'connect ECONNREFUSED 127.0.0.1:80' };
-
 /*
 NOTE: codeFilter code has been commented out in order to test
 bulkImport in deqm-test-server. Otherwise, errors arise since
@@ -127,9 +125,13 @@ describe.skip('getDataRequirements Tests', () => {
     );
   });
 });
-describe('queryBulkServer Tests', () => {
-  test('Throw error if invalid export URL given to queryBulkDataServer', async () => {
-    const results = await queryBulkDataServer(invalidURL);
-    expect(results).toEqual(invalidURLError);
+
+describe('retrieveAllBulkData Tests', () => {
+  test('Should call queryBulkDataServer with no type filters', async () => {
+    const qbdSpy = jest.spyOn(exportQueries, 'queryBulkDataServer').mockImplementationOnce(async () => {
+      return { output: null };
+    });
+    await retrieveAllBulkData('https://example.com');
+    expect(qbdSpy).toHaveBeenCalledWith('https://example.com/$export');
   });
 });
