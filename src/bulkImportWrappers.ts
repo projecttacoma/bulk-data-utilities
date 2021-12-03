@@ -2,6 +2,7 @@ import { retrieveAllBulkData, retrieveBulkDataFromMeasureBundle } from './Requir
 import { populateDB } from './utils/ndjsonParser';
 import { assembleTransactionBundles } from './utils/bundleAssemblyHelpers';
 import { TransactionBundle } from './types/TransactionBundle';
+import { rmSync } from 'fs';
 
 export async function executeBulkImport(
   exportUrl: string,
@@ -18,6 +19,7 @@ export async function executeBulkImport(
     const db = await populateDB(bulkDataResponses, location);
     const tbArr = await assembleTransactionBundles(db);
     await db.close();
+    rmSync(location);
     return tbArr;
   }
 }
