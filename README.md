@@ -3,6 +3,13 @@
 A library to handle  bulk import requests and interact with the [DEQM-Test-Server](https://github.com/projecttacoma/deqm-test-server)
 
 
+
+### Prerequisites
+
+- [Node.js >=11.15.0](https://nodejs.org/en/)
+- [SQLite3](https://www.sqlite.org/download.html)
+- [Git](https://git-scm.com/)
+
 ### Local Installation
 Clone the source code:
 
