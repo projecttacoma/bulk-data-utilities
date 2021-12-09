@@ -1,16 +1,28 @@
 # Bulk Data Utilities 
 
-A library to handle  bulk import requests and interact with the [DEQM-Test-Server](https://github.com/projecttacoma/deqm-test-server)
+A library to handle  bulk import requests and interact with the [DEQM-Test-Server](https://github.com/projecttacoma/deqm-test-server) This library is used to help implement bulk import via a  ping and pull approach which is described [here] (https://github.com/smart-on-fhir/bulk-import/blob/master/import-pnp.md)
 
+## Usage 
+###  Installation
+In order to install this library as a dependency for a project  to use in bulk data development: 
+
+```npm install --save https://github.com/projecttacoma/bulk-data-utilities```
+
+### Usage
+
+```import { BulkImportWrappers } from 'bulk-data-utilities';```
+
+```await BulkImportWrappers.executeBulkImport(exportUrl, location, mb);```
 
 ## Local Development
 ### Prerequisites
 
 - [Node.js >=11.15.0](https://nodejs.org/en/)
-- [SQLite3](https://www.sqlite.org/download.html)
 - [Git](https://git-scm.com/)
 
+
 ### Local Installation
+
 Clone the source code:
 
 ```bash
