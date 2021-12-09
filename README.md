@@ -14,6 +14,14 @@ In order to install this library as a dependency for a project  to use in bulk d
 
 ```await BulkImportWrappers.executeBulkImport(exportUrl, location, mb);```
 
+ -```exportUrl ``` - this is URL where the bulk export server is located 
+
+ -```location ``` -  This is the location of the patient data to be imported into the database
+
+ -```mb``` - this is a FHIR measure bundle, it is an optional parameter 
+  - If measure bundle is provided, it extracts data requirements and does import ping and pull with the types defined by the data requirements (typeFilter is WIP)
+- If measure bundle is omitted, it will just pass through the exportURL and do ping and pull as normal
+
 ## Local Development
 ### Prerequisites
 
