@@ -1,6 +1,6 @@
 # Bulk Data Utilities 
 
-A library to handle  bulk import requests and interact with the [DEQM-Test-Server](https://github.com/projecttacoma/deqm-test-server) This library is used to help implement bulk import via a  ping and pull approach which is described [here] (https://github.com/smart-on-fhir/bulk-import/blob/master/import-pnp.md)
+A library to handle  bulk import requests and interact with the [DEQM-Test-Server](https://github.com/projecttacoma/deqm-test-server) This library is used to help implement bulk import via a  ping and pull approach which is described [here](https://github.com/smart-on-fhir/bulk-import/blob/master/import-pnp.md)
 
 ## Usage 
 ###  Installation
