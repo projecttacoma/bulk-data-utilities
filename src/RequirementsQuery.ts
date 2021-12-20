@@ -7,7 +7,6 @@ import { queryBulkDataServer } from './exportServerQueries';
 export const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
-
 /**
  * extracts the data requirements and formats
  * @param dataRequirements: An array of data requirements as returned from fqm-execution
