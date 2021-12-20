@@ -3,10 +3,6 @@ import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
 import { queryBulkDataServer } from './exportServerQueries';
 
-// Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
-export const API_URL =
-  'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
-
 /**
  * extracts the data requirements and formats
  * @param dataRequirements: An array of data requirements as returned from fqm-execution
