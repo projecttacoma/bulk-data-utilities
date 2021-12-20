@@ -1,49 +1,12 @@
 import { Calculator } from 'fqm-execution';
-import fs from 'fs';
 import { URLSearchParams } from 'url';
 import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
 import { queryBulkDataServer } from './exportServerQueries';
-
-/**
- * Temporary Solution: this line gets rid of the self signed cert
- * errors that come up in the bulk data import reference server
- *
- * TODO: Remove this once we make changes to the reference
- * server
- */
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-const exampleMeasureBundle = '../connectathon/fhir401/bundles/measure/EXM130-7.3.000/EXM130-7.3.000-bundle.json'; //REPLACE WITH PATH TO DESIRED MEASURE BUNDLE
 
 // Retrieved from https://bulk-data.smarthealthit.org/ under FHIR Server URL
 export const API_URL =
   'https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1IjozLCJkZWwiOjB9/fhir';
 
-const EXAMPLE_REQUIREMENTS = [
-  {
-    type: 'Encounter',
-    codeFilter: []
-  },
-  {
-    type: 'Procedure',
-    codeFilter: []
-  },
-  {
-    type: 'Patient',
-    codeFilter: []
-  }
-];
-
-/**
- * Function taken directly from fqm-execution. parses measure bundle into
- * appropriate format for dataRequirements function
- * @param filePath: path to measure bundle on local machine
- * @returns fhir4.Bundle: a MeasureBundle as a JSON object parsed from the passed file
- */
-function parseBundle(filePath: string): fhir4.Bundle {
-  const contents = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(contents) as fhir4.Bundle;
-}
 
 /**
  * extracts the data requirements and formats
@@ -57,19 +20,6 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
-
-      /*
-      NOTE: codeFilter code has been commented out in order to test
-      bulkImport in deqm-test-server. Otherwise, errors arise since
-      the $export reference server does not support _typeFilter
-      */
-      // if (dr?.codeFilter?.[0]?.code?.[0]) {
-      //   const key = dr?.codeFilter?.[0].path;
-      //   key && (q.params[key] = dr.codeFilter[0].code[0].code);
-      // } else if (dr?.codeFilter?.[0]?.valueSet) {
-      //   const key = `${dr?.codeFilter?.[0].path}:in`;
-      //   key && (q.params[key] = dr.codeFilter[0].valueSet);
-      // }
       queries.push(q);
     }
   });
@@ -92,19 +42,6 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
 
   return { _type: formattedTypes, _typeFilter: typeFilterString };
 };
-
-/**
- * Parses a measure bundle based on the local path and queries a bulk data server for the data requirements
- * @param measureBundle: path to a local measure bundle
- * @param exportURL: export server URL string
- */
-async function retrieveBulkDataFromMeasureBundlePath(measureBundle: string, exportURL: string) {
-  const dr = Calculator.calculateDataRequirements(parseBundle(measureBundle));
-  if (!dr.results.dataRequirement) {
-    dr.results.dataRequirement = [];
-  }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportURL);
-}
 
 /**
  * Parses a measure bundle object and queries a bulk data server for the data requirements
@@ -149,6 +86,3 @@ export async function retrieveAllBulkData(
   const url = `${exportURL}/$export`;
   return await queryBulkDataServer(url);
 }
-
-//retrieveBulkDataFromMeasureBundlePath(exampleMeasureBundle, API_URL); //UNCOMMENT TO RUN API REQUEST WITH DESIRED MEASUREBUNDLE FILE (Will almost certainly cause an error)
-//retrieveBulkDataFromRequirements(EXAMPLE_REQUIREMENTS, API_URL); //UNCOMMENT TO RUN API REQUEST WITH EXAMPLE DATA REQUIREMENTS

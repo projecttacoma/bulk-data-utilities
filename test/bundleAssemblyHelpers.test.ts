@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import * as bundleAssemblyHelpers from '../src/utils/bundleAssemblyHelpers';
 import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
