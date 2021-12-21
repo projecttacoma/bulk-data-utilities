@@ -8,8 +8,8 @@ import { populateDB } from '../src/utils/ndjsonParser';
 import fs from 'fs';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
-import { BulkDataResponse } from '../src/types/RequirementsQueryTypes';
-import { TransactionBundle } from '../src/types/TransactionBundle';
+import { BulkDataResponse } from '../src/types/requirementsQueryTypes';
+import { TransactionBundle } from '../src/types/transactionBundle';
 
 async function setupTestDB() {
   // create in-memory DB

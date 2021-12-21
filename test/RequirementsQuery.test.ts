@@ -1,5 +1,5 @@
-import * as exportQueries from '../src/exportServerQueries';
-import { retrieveAllBulkData, getDataRequirementsQueries } from '../src/RequirementsQuery';
+import * as exportQueries from '../src/utils/exportServerQueryBuilder';
+import { retrieveAllBulkData, getDataRequirementsQueries } from '../src/utils/requirementsQueryBuilder';
 
 const DATA_REQUIREMENTS_PATIENT = [
   {
