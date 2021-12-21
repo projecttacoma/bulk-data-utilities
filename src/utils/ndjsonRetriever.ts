@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BulkDataResponse } from '../types/RequirementsQueryTypes';
+import { BulkDataResponse } from '../types/requirementsQueryTypes';
 
 export async function retrieveNDJSONFromLocation(locationInfo: BulkDataResponse): Promise<string> {
   const data = (await axios.get(locationInfo.url)).data;

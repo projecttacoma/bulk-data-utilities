@@ -1,7 +1,7 @@
 import { retrieveAllBulkData, retrieveBulkDataFromMeasureBundle } from './utils/requirementsQueryBuilder';
 import { populateDB } from './utils/ndjsonParser';
 import { assembleTransactionBundles } from './utils/bundleAssemblyHelpers';
-import { TransactionBundle } from './types/TransactionBundle';
+import { TransactionBundle } from './types/transactionBundle';
 import { rmSync } from 'fs';
 
 export async function executeBulkImport(
