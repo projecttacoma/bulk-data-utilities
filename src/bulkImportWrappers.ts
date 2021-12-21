@@ -1,4 +1,4 @@
-import { retrieveAllBulkData, retrieveBulkDataFromMeasureBundle } from './RequirementsQuery';
+import { retrieveAllBulkData, retrieveBulkDataFromMeasureBundle } from './utils/requirementsQueryBuilder';
 import { populateDB } from './utils/ndjsonParser';
 import { assembleTransactionBundles } from './utils/bundleAssemblyHelpers';
 import { TransactionBundle } from './types/TransactionBundle';

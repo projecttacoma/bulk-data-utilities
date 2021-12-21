@@ -3,7 +3,7 @@
 import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
-import { BulkDataResponse } from '../types/RequirementsQueryTypes';
+import { BulkDataResponse } from '../types/requirementsQueryTypes';
 import { retrieveNDJSONFromLocation } from './ndjsonRetriever';
 
 // Used to log number of resources inserted into the db

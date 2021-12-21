@@ -1,7 +1,7 @@
 import { Calculator } from 'fqm-execution';
 import { URLSearchParams } from 'url';
-import { DRQuery, APIParams, BulkDataResponse } from './types/RequirementsQueryTypes';
-import { queryBulkDataServer } from './exportServerQueries';
+import { DRQuery, APIParams, BulkDataResponse } from '../types/requirementsQueryTypes';
+import { queryBulkDataServer } from './exportServerQueryBuilder';
 
 /**
  * extracts the data requirements and formats
