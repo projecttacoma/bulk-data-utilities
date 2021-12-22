@@ -1,60 +1,13 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
 import * as sqlite3 from 'sqlite3';
-import * as Walker from 'walk';
-import * as Path from 'path';
 // wrapper around sqlite3 that is promise-based
 import * as sqlite from 'sqlite';
-import { BulkDataResponse } from '../types/RequirementsQueryTypes';
+import { BulkDataResponse } from '../types/requirementsQueryTypes';
 import { retrieveNDJSONFromLocation } from './ndjsonRetriever';
 
 // Used to log number of resources inserted into the db
 let insertedResources = 0;
-
-/**
- * Parses through each file and calls function on each file
- * @param options object containing specified options to use for reading files
- * @param cb function to be called on each file
- */
-function forEachFile(options: any, execute: (path: string, fileStats: any, next: any) => any): Promise<void> {
-  options = Object.assign(
-    {
-      dir: '.',
-      filter: null,
-      followLinks: false,
-      limit: 0
-    },
-    options
-  );
-
-  return new Promise<void>((resolve, reject) => {
-    const walker = Walker.walk(options.dir, {
-      followLinks: options.followLinks
-    });
-
-    let i = 0;
-
-    walker.on('errors', (root: string, nodeStatsArray: any, next: any) => {
-      reject(new Error('Error: ' + nodeStatsArray.error + root + ' - '));
-      next();
-    });
-
-    walker.on('end', () => {
-      resolve();
-    });
-
-    walker.on('file', (root: string, fileStats: { name: string }, next: any) => {
-      const path = Path.resolve(root, fileStats.name);
-      if (options.filter && !options.filter(path)) {
-        return next();
-      }
-      if (options.limit && ++i > options.limit) {
-        return next();
-      }
-      execute(path, fileStats, next);
-    });
-  });
-}
 
 /**
  * takes in the desired path to a db and creates the db with appropriate tables

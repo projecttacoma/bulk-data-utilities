@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { BulkDataResponse } from './types/RequirementsQueryTypes';
+import { BulkDataResponse } from '../types/requirementsQueryTypes';
 
 const headers = {
   Accept: 'application/fhir+json',

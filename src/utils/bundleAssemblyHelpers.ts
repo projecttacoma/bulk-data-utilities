@@ -1,4 +1,4 @@
-import { TransactionBundle } from '../types/TransactionBundle';
+import { TransactionBundle } from '../types/transactionBundle';
 import * as sqlite from 'sqlite';
 
 /**

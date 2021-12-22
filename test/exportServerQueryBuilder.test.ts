@@ -1,5 +1,4 @@
-import { queryBulkDataServer } from '../src/exportServerQueries';
-
+import { queryBulkDataServer } from '../src/utils/exportServerQueryBuilder';
 const invalidURL = 'not-a-real-url';
 const invalidURLError = { output: null, error: 'connect ECONNREFUSED 127.0.0.1:80' };
 

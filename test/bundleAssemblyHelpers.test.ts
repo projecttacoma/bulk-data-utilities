@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import * as bundleAssemblyHelpers from '../src/utils/bundleAssemblyHelpers';
 import * as sqlite3 from 'sqlite3';
 // wrapper around sqlite3 that is promise-based
@@ -7,8 +8,8 @@ import { populateDB } from '../src/utils/ndjsonParser';
 import fs from 'fs';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
-import { BulkDataResponse } from '../src/types/RequirementsQueryTypes';
-import { TransactionBundle } from '../src/types/TransactionBundle';
+import { BulkDataResponse } from '../src/types/requirementsQueryTypes';
+import { TransactionBundle } from '../src/types/transactionBundle';
 
 async function setupTestDB() {
   // create in-memory DB
