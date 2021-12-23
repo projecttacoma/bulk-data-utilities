@@ -34,7 +34,7 @@ export async function probeServer(url: string): Promise<{ output: BulkDataRespon
   let results;
   try {
     results = await axios.get(url, { headers });
-    while (results.status === 202) {
+    while (results && results.status === 202) {
       await sleep(1000);
       results = await axios.get(url, { headers });
     }
