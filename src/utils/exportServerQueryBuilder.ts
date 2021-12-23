@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { BulkDataResponse } from '../types/requirementsQueryTypes';
 
 const headers = {
@@ -15,8 +15,8 @@ export async function queryBulkDataServer(url: string): Promise<{ output: BulkDa
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
-  } catch (err) {
-    return { output: null, error: (err as AxiosError).message };
+  } catch (e) {
+    throw new Error(`Failed reaching out to bulk export server with message: ${e.message}`);
   }
 }
 
@@ -31,13 +31,21 @@ function sleep(ms: number) {
  */
 
 export async function probeServer(url: string): Promise<{ output: BulkDataResponse[] }> {
-  let results = await axios.get(url, { headers });
-  while (results.status === 202) {
-    await sleep(1000);
+  let results;
+  try {
     results = await axios.get(url, { headers });
+    while (results.status === 202) {
+      await sleep(1000);
+      results = await axios.get(url, { headers });
+    }
+  } catch (e) {
+    throw new Error(`Failed reaching out to bulk export server with message: ${e.message}`);
   }
-  if (results.status === 500) {
-    throw new Error('Received 500 status: Internal Server Error');
+  if (results && results.status === 200) {
+    return { output: results.data.output };
+  } else if (results) {
+    throw new Error(`Unexpected response from bulk export server status: ${results.status}`);
+  } else {
+    throw new Error('An unknown ocurred while retrieving data from bulk export server');
   }
-  return { output: results.data.output };
 }
