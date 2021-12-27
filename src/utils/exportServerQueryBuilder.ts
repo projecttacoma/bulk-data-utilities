@@ -11,7 +11,7 @@ const headers = {
  * to check on progress
  * @param url: A bulk data export FHIR server url with params
  */
-export async function queryBulkDataServer(url: string): Promise<{ output: BulkDataResponse[] | null; error?: string }> {
+export async function queryBulkDataServer(url: string): Promise<{ output: BulkDataResponse[] | null }> {
   try {
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
