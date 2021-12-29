@@ -131,7 +131,7 @@ describe('retrieveAllBulkData Tests', () => {
     const qbdSpy = jest.spyOn(exportQueries, 'queryBulkDataServer').mockImplementationOnce(async () => {
       return { output: null };
     });
-    await retrieveAllBulkData('https://example.com');
+    await retrieveAllBulkData('https://example.com/$export');
     expect(qbdSpy).toHaveBeenCalledWith('https://example.com/$export');
   });
 });
