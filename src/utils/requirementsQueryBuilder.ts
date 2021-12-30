@@ -41,43 +41,43 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
 /**
  * Parses a measure bundle object and queries a bulk data server for the data requirements
  * @param measureBundle: measure bundle object
- * @param exportURL: export server URL string
+ * @param exportUrl: export server URL string
  */
 
 export async function retrieveBulkDataFromMeasureBundle(
   measureBundle: fhir4.Bundle,
-  exportURL: string
+  exportUrl: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const dr = Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportURL);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportUrl);
 }
 
 /**
  * takes in data requirements and creates a URL to query bulk data server, then queries it
  * @param requirements: dataRequirements as output from fqm-execution
- * @param exportURL: export server URL string
+ * @param exportUrl: export server URL string
  */
 
 async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
-  exportURL: string
+  exportUrl: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const params = getDataRequirementsQueries(requirements);
-  const url = `${exportURL}/$export?_type=${params._type}&_typeFilter=${params._typeFilter}`;
+  const url = `${exportUrl}?_type=${params._type}&_typeFilter=${params._typeFilter}`;
   return await queryBulkDataServer(url);
 }
 
 /**
  * Formats a request for all data on the given server and executes it
- * @param {string} exportURL The url of the desired export server
+ * @param {string} exportUrl The url of the desired export server
  * @returns An object containing an array of bulkDataResponses
  */
 export async function retrieveAllBulkData(
-  exportURL: string
+  exportUrl: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
-  const url = `${exportURL}/$export`;
+  const url = `${exportUrl}`;
   return await queryBulkDataServer(url);
 }
