@@ -66,7 +66,12 @@ async function retrieveBulkDataFromRequirements(
   exportUrl: string
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const params = getDataRequirementsQueries(requirements);
-  const url = `${exportUrl}?_type=${params._type}&_typeFilter=${params._typeFilter}`;
+  let url = `${exportUrl}?_type=${params._type}`;
+
+  if (params._typeFilter) {
+    url += `&_typeFilter=${params._typeFilter}`;
+  }
+
   return await queryBulkDataServer(url);
 }
 

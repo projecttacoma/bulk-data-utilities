@@ -1,14 +1,7 @@
 import { retrieveAllBulkData, retrieveBulkDataFromMeasureBundle } from './utils/requirementsQueryBuilder';
-import { populateDB } from './utils/ndjsonParser';
-import { assembleTransactionBundles } from './utils/bundleAssemblyHelpers';
-import { TransactionBundle } from './types/transactionBundle';
-import { rmSync } from 'fs';
+import { BulkDataResponse } from './types/requirementsQueryTypes';
 
-export async function executeBulkImport(
-  exportUrl: string,
-  location: string,
-  mb?: fhir4.Bundle
-): Promise<TransactionBundle[] | void> {
+export async function executeBulkImport(exportUrl: string, mb?: fhir4.Bundle): Promise<BulkDataResponse[] | undefined> {
   let bulkDataResponses = null;
   if (mb) {
     ({ output: bulkDataResponses } = await retrieveBulkDataFromMeasureBundle(mb, exportUrl));
@@ -16,16 +9,6 @@ export async function executeBulkImport(
     ({ output: bulkDataResponses } = await retrieveAllBulkData(exportUrl));
   }
   if (bulkDataResponses) {
-    try {
-      const db = await populateDB(bulkDataResponses, location);
-      const tbArr = await assembleTransactionBundles(db);
-      await db.close();
-      rmSync(location);
-      return tbArr;
-    } catch (e) {
-      // ensure created database file is removed before error is thrown
-      rmSync(location);
-      throw e;
-    }
+    return bulkDataResponses;
   }
 }

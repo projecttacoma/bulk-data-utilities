@@ -5,6 +5,7 @@ import * as sqlite3 from 'sqlite3';
 import * as sqlite from 'sqlite';
 import { BulkDataResponse } from '../types/requirementsQueryTypes';
 import { retrieveNDJSONFromLocation } from './ndjsonRetriever';
+import fs from 'fs';
 
 // Used to log number of resources inserted into the db
 let insertedResources = 0;
@@ -78,7 +79,7 @@ export async function insertResourceIntoDB(DB: sqlite.Database, line: string): P
  */
 export async function checkReferences(db: sqlite.Database): Promise<void> {
   const params = {
-    $limit: 100,
+    $limit: 1000,
     $offset: 0
   };
 
@@ -92,10 +93,17 @@ export async function checkReferences(db: sqlite.Database): Promise<void> {
     const references = Array.from(row.resource_json.matchAll(new RegExp(/"reference":"(.*?)\/(.*?)"/gi)), m => [
       m[1],
       m[2]
-    ]);
+    ]).filter(([resourceType]) => !resourceType.startsWith('#'));
+
+    fs.writeFileSync('resourceTypeRefs.json', JSON.stringify(references, null, 2));
+    const uuids = [
+      ...Array.from(row.resource_json.matchAll(new RegExp(/"reference":"urn:uuid:(.*?)"/gi)), m => ['urn:uuid', m[1]])
+    ];
+
     references.push(
       ...Array.from(row.resource_json.matchAll(new RegExp(/"reference":"urn:uuid:(.*?)"/gi)), m => ['urn:uuid', m[1]])
     );
+    fs.writeFileSync('resourceTypeUUID.json', JSON.stringify(uuids, null, 2));
     if (references.length > 0) {
       const q = references.map(async (ref: string[]) => {
         const [referenceType, referenceId] = ref;
@@ -121,7 +129,11 @@ export async function checkReferences(db: sqlite.Database): Promise<void> {
     if (rowSet.length) {
       params.$offset += rowSet.length;
       await checkRowSet();
-      return Promise.all(rowSet.map(checkRow)).catch(e => {
+      return Promise.all(
+        rowSet.map(async r => {
+          return checkRow(r);
+        })
+      ).catch(e => {
         throw new Error(e);
       });
     }
@@ -160,11 +172,17 @@ export function getLocalReferences(entry: any): string[] {
  * @param location a file path signifying where to store the created db
  * @returns a promise which resolves to a sqlite3 db
  */
-export async function populateDB(exportOutput: BulkDataResponse[], location: string): Promise<sqlite.Database> {
-  const DB: sqlite.Database = await createDatabase(location);
+export async function populateDB(
+  exportOutput: BulkDataResponse[],
+  location: string,
+  DB: sqlite.Database
+): Promise<sqlite.Database> {
+  // const DB: sqlite.Database = await createDatabase(location);
   // We want each ndjson file to be parse synchronously here to avoid overloading the memory
   // This forces us to use a reduce which waits for the previous iteration to return before executing the next
-  await exportOutput.reduce(async (acc: any, locationInfo: BulkDataResponse) => {
+
+  /* await exportOutput.reduce(async (prevPromise: Promise<void>, locationInfo: BulkDataResponse) => {
+    await prevPromise;
     const ndjsonResources = await retrieveNDJSONFromLocation(locationInfo);
 
     const resourcePromises = ndjsonResources
@@ -174,8 +192,8 @@ export async function populateDB(exportOutput: BulkDataResponse[], location: str
         await insertResourceIntoDB(DB, resource);
       });
     await Promise.all(resourcePromises);
-  }, Promise.resolve());
-  await checkReferences(DB);
+  }, Promise.resolve()); */
+  // await checkReferences(DB);
   console.log('\nValidation complete');
   console.log(`${insertedResources} resources inserted in DB`);
   return DB;
