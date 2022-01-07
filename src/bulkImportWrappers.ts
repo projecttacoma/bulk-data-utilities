@@ -16,10 +16,16 @@ export async function executeBulkImport(
     ({ output: bulkDataResponses } = await retrieveAllBulkData(exportUrl));
   }
   if (bulkDataResponses) {
-    const db = await populateDB(bulkDataResponses, location);
-    const tbArr = await assembleTransactionBundles(db);
-    await db.close();
-    rmSync(location);
-    return tbArr;
+    try {
+      const db = await populateDB(bulkDataResponses, location);
+      const tbArr = await assembleTransactionBundles(db);
+      await db.close();
+      rmSync(location);
+      return tbArr;
+    } catch (e) {
+      // ensure created database file is removed before error is thrown
+      rmSync(location);
+      throw e;
+    }
   }
 }
