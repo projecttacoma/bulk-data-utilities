@@ -11,15 +11,13 @@
     "fqm-execution": "^0.8.0",
     "path": "^0.12.7",
     "sqlite": "^4.0.23",
-    "sqlite3": "^5.0.2",
-    "walk": "^2.3.14"
+    "sqlite3": "^5.0.2"
   },
   "devDependencies": {
     "@types/fhir": "0.0.34",
     "@types/jest": "^27.0.0",
     "@types/node": "^14.17.7",
     "@types/sqlite3": "^3.1.7",
-    "@types/walk": "^2.3.1",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",
     "axios-mock-adapter": "^1.20.0",
