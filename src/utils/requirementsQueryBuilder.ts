@@ -60,7 +60,7 @@ export async function retrieveBulkDataFromMeasureBundle(
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportUrl);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportUrl, useTypeFilters);
 }
 
 /**
