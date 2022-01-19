@@ -78,7 +78,7 @@ export async function insertResourceIntoDB(DB: sqlite.Database, line: string): P
  */
 export async function checkReferences(db: sqlite.Database): Promise<void> {
   const params = {
-    $limit: 100,
+    $limit: 1000,
     $offset: 0
   };
 
@@ -92,10 +92,12 @@ export async function checkReferences(db: sqlite.Database): Promise<void> {
     const references = Array.from(row.resource_json.matchAll(new RegExp(/"reference":"(.*?)\/(.*?)"/gi)), m => [
       m[1],
       m[2]
-    ]);
+    ]).filter(([resourceType]) => !resourceType.startsWith('#'));
+
     references.push(
       ...Array.from(row.resource_json.matchAll(new RegExp(/"reference":"urn:uuid:(.*?)"/gi)), m => ['urn:uuid', m[1]])
     );
+
     if (references.length > 0) {
       const q = references.map(async (ref: string[]) => {
         const [referenceType, referenceId] = ref;
@@ -121,7 +123,11 @@ export async function checkReferences(db: sqlite.Database): Promise<void> {
     if (rowSet.length) {
       params.$offset += rowSet.length;
       await checkRowSet();
-      return Promise.all(rowSet.map(checkRow)).catch(e => {
+      return Promise.all(
+        rowSet.map(async r => {
+          return checkRow(r);
+        })
+      ).catch(e => {
         throw new Error(e);
       });
     }
@@ -164,7 +170,9 @@ export async function populateDB(exportOutput: BulkDataResponse[], location: str
   const DB: sqlite.Database = await createDatabase(location);
   // We want each ndjson file to be parse synchronously here to avoid overloading the memory
   // This forces us to use a reduce which waits for the previous iteration to return before executing the next
-  await exportOutput.reduce(async (acc: any, locationInfo: BulkDataResponse) => {
+
+  await exportOutput.reduce(async (prevPromise: Promise<void>, locationInfo: BulkDataResponse) => {
+    await prevPromise;
     const ndjsonResources = await retrieveNDJSONFromLocation(locationInfo);
 
     const resourcePromises = ndjsonResources

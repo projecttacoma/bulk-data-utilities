@@ -8,7 +8,10 @@ import { queryBulkDataServer } from './exportServerQueryBuilder';
  * @param dataRequirements: An array of data requirements as returned from fqm-execution
  * @returns APIParams: An object containing the _type and _typeFilter strings to be appended to the URL as parameters
  */
-export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequirement[]): APIParams => {
+export const getDataRequirementsQueries = (
+  dataRequirements: fhir4.DataRequirement[],
+  useTypeFilters?: boolean
+): APIParams => {
   const queries: DRQuery[] = [];
 
   // converts dataRequirements output into a format easily parsed into URL params
@@ -26,16 +29,20 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
     return acc;
   }, []);
   const formattedTypes = uniqTypes.join(',');
-  const formattedTypeFilter = queries.reduce((acc: string[], e) => {
-    //if the params object is empty, we dont want to add any params
-    if (Object.keys(e.params).length > 0) {
-      acc.push(`${e.endpoint}%3F${new URLSearchParams(e.params).toString()}`);
-    }
-    return acc;
-  }, []);
-  const typeFilterString = formattedTypeFilter.join(',');
 
-  return { _type: formattedTypes, _typeFilter: typeFilterString };
+  let typeFilterString = '';
+  if (useTypeFilters) {
+    const formattedTypeFilter = queries.reduce((acc: string[], e) => {
+      //if the params object is empty, we dont want to add any params
+      if (Object.keys(e.params).length > 0) {
+        acc.push(`${e.endpoint}%3F${new URLSearchParams(e.params).toString()}`);
+      }
+      return acc;
+    }, []);
+    typeFilterString = formattedTypeFilter.join(',');
+  }
+
+  return { _type: formattedTypes, ...(useTypeFilters ? { _typeFilter: typeFilterString } : {}) };
 };
 
 /**
@@ -46,13 +53,14 @@ export const getDataRequirementsQueries = (dataRequirements: fhir4.DataRequireme
 
 export async function retrieveBulkDataFromMeasureBundle(
   measureBundle: fhir4.Bundle,
-  exportUrl: string
+  exportUrl: string,
+  useTypeFilters?: boolean
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const dr = Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
-  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportUrl);
+  return await retrieveBulkDataFromRequirements(dr.results.dataRequirement, exportUrl, useTypeFilters);
 }
 
 /**
@@ -63,10 +71,16 @@ export async function retrieveBulkDataFromMeasureBundle(
 
 async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
-  exportUrl: string
+  exportUrl: string,
+  useTypeFilters?: boolean
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
-  const params = getDataRequirementsQueries(requirements);
-  const url = `${exportUrl}?_type=${params._type}&_typeFilter=${params._typeFilter}`;
+  const params = getDataRequirementsQueries(requirements, useTypeFilters);
+  let url = `${exportUrl}?_type=${params._type}`;
+
+  if (params._typeFilter) {
+    url += `&_typeFilter=${params._typeFilter}`;
+  }
+
   return await queryBulkDataServer(url);
 }
 

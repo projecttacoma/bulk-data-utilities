@@ -8,7 +8,7 @@ export interface DRQuery {
 
 export interface APIParams {
   _type: string;
-  _typeFilter: string;
+  _typeFilter?: string;
 }
 
 export interface BulkDataResponse {
