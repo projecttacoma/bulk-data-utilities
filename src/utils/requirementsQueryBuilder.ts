@@ -18,6 +18,13 @@ export const getDataRequirementsQueries = (
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
+      if (dr?.codeFilter?.[0]?.code?.[0]) {
+        const key = dr?.codeFilter?.[0].path;
+        key && (q.params[key] = dr.codeFilter[0].code[0].code);
+      } else if (dr?.codeFilter?.[0]?.valueSet) {
+        const key = `${dr?.codeFilter?.[0].path}:in`;
+        key && (q.params[key] = dr.codeFilter[0].valueSet);
+      }
       queries.push(q);
     }
   });

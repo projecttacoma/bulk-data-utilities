@@ -93,34 +93,34 @@ const EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_IS_CODE = {
   _typeFilter: 'Encounter%3Fcode=TEST_CODE'
 };
 
-/*
-NOTE: codeFilter code has been commented out in order to test
-bulkImport in deqm-test-server. Otherwise, errors arise since
-the $export reference server does not support _typeFilter.
-
-If these tests are run with the codeFilter code commented out,
-they will fail. To run these tests, first uncomment the
-codeFilter code in the getDataRequirementsQueries function.
-*/
-describe.skip('getDataRequirements Tests', () => {
-  test('Patient type request', () => {
-    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_PATIENT)).toEqual(EXPECTED_DATA_REQUIREMENTS_PATIENT);
+describe('getDataRequirements Tests', () => {
+  test('useTypeFilters false should not generate any', () => {
+    const query = getDataRequirementsQueries(DATA_REQUIREMENTS_PATIENT, false);
+    expect(query._typeFilter).toBeUndefined();
   });
+
+  test('Patient type request', () => {
+    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_PATIENT, true)).toEqual(EXPECTED_DATA_REQUIREMENTS_PATIENT);
+  });
+
   test('Procedure in valueset request', () => {
-    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_PROCEDURE_W_VALUESET)).toEqual(
+    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_PROCEDURE_W_VALUESET, true)).toEqual(
       EXPECTED_DATA_REQUIREMENTS_PROCEDURE_W_VALUESET
     );
   });
+
   test('Encounter with code in valueset request', () => {
-    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_ENCOUNTER_W_CODE)).toEqual(
+    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_ENCOUNTER_W_CODE, true)).toEqual(
       EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_W_CODE
     );
   });
+
   test('Multiple requirements', () => {
-    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_MULTIPLE)).toEqual(EXPECTED_DATA_REQUIREMENTS_MULTIPLE);
+    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_MULTIPLE, true)).toEqual(EXPECTED_DATA_REQUIREMENTS_MULTIPLE);
   });
+
   test('Encounter with code equals', () => {
-    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_ENCOUNTER_IS_CODE)).toEqual(
+    expect(getDataRequirementsQueries(DATA_REQUIREMENTS_ENCOUNTER_IS_CODE, true)).toEqual(
       EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_IS_CODE
     );
   });
