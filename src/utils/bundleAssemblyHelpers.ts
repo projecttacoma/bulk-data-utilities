@@ -1,5 +1,9 @@
-import { TransactionBundle } from '../types/transactionBundle';
-import * as sqlite from 'sqlite';
+/* NOTE: currently disabling the sqlite3 code until a decision is made on referential integrity in ndjson
+   right now, it kills performance
+*/
+
+// import { TransactionBundle } from '../types/transactionBundle';
+// import * as sqlite from 'sqlite';
 
 /**
  * Uses SQL query to retrieve all the Patient resource ids from the fhir resource
@@ -8,10 +12,10 @@ import * as sqlite from 'sqlite';
  * @returns an array containing resource_id, wrapped in an object, for each patient in
  * the fhir resource table
  */
-export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
+/* export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
   return DB.all('SELECT resource_id FROM "fhir_resources" WHERE fhir_type = "Patient"');
 }
-
+ */
 /**
  * Uses SQL query to retrieve all the resource ids from the fhir resource
  * table in our database
@@ -19,10 +23,10 @@ export async function getAllPatientIds(DB: sqlite.Database): Promise<{ resource_
  * @returns an array containing resource_id, wrapped in an object, for each resource in
  * the fhir resource table
  */
-export async function getAllResourceIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
+/* export async function getAllResourceIds(DB: sqlite.Database): Promise<{ resource_id: string }[]> {
   return DB.all('SELECT resource_id FROM "fhir_resources"');
 }
-
+ */
 /**
  * Uses SQL query to retrieve all the resources in the fhir resource table that
  * reference a given patient
@@ -31,13 +35,13 @@ export async function getAllResourceIds(DB: sqlite.Database): Promise<{ resource
  * @returns an array of all resource_ids wrapped in objects for resources that
  * reference the passed in patientId
  */
-export async function getReferencesToPatient(
+/* export async function getReferencesToPatient(
   DB: sqlite.Database,
   patientId: string
 ): Promise<{ origin_resource_id: string }[]> {
   return DB.all('SELECT origin_resource_id FROM "local_references" WHERE reference_id = ?', patientId);
 }
-
+ */
 /**
  * Uses SQL query to find all resource ids referenced by the fhir resource table with the passed
  * in resource id
@@ -46,13 +50,13 @@ export async function getReferencesToPatient(
  * @returns an array containing the resourceId, wrapped in an object,
  * for each resource referenced by the resource with the passed in resourceId
  */
-export async function getResourcesReferenced(
+/* export async function getResourcesReferenced(
   DB: sqlite.Database,
   resourceId: string
 ): Promise<{ reference_id: string }[]> {
   return DB.all('SELECT reference_id FROM "local_references"  WHERE origin_resource_id = ?', resourceId);
 }
-
+ */
 /**
  * Uses SQL query to find all resource ids which correspond to fhir resources that
  * reference the passed in object
@@ -61,13 +65,13 @@ export async function getResourcesReferenced(
  * @returns an array containing the resourceId, wrapped in an object,
  * for each resource which references the resource with the passed in resourceId
  */
-export async function getResourcesThatReference(
+/* export async function getResourcesThatReference(
   DB: sqlite.Database,
   resourceId: string
 ): Promise<{ origin_resource_id: string }[]> {
   return DB.all('SELECT origin_resource_id FROM "local_references"  WHERE reference_id = ?', resourceId);
 }
-
+ */
 /**
  * Recursively searches through the graph of references to pull the ids of all resources
  * related through some chain of references to the resource with the passed in id
@@ -79,7 +83,7 @@ export async function getResourcesThatReference(
  * @returns an array of all resource ids referenced (through any chain of references)
  * by the resource with the passed in resource id
  */
-export async function getRecursiveReferences(
+/* export async function getRecursiveReferences(
   DB: sqlite.Database,
   resourceId: string,
   exploredResources: Set<string>,
@@ -113,7 +117,7 @@ export async function getRecursiveReferences(
   foundRefs.push(...newRefs.flat());
   // If the resource has no unexplored references, this will just return the passed in resourceId in an array
   return [resourceId, ...foundRefs];
-}
+} */
 
 /**
  * Create transaction bundle that contains all resources that reference patient, and their
@@ -123,7 +127,7 @@ export async function getRecursiveReferences(
  * those resources reference
  * @returns transaction bundle object
  */
-export async function createTransactionBundle(DB: sqlite.Database, resourceIds: string[]): Promise<TransactionBundle> {
+/* export async function createTransactionBundle(DB: sqlite.Database, resourceIds: string[]): Promise<TransactionBundle> {
   const tb = new TransactionBundle();
   // get data for each resource from the database
   const resourceJSONs: { resource_json: string }[] = await DB.all(
@@ -137,7 +141,7 @@ export async function createTransactionBundle(DB: sqlite.Database, resourceIds: 
   });
   return tb;
 }
-
+ */
 /**
  *
  * @param DB sqlite db containing all our resources
@@ -145,7 +149,7 @@ export async function createTransactionBundle(DB: sqlite.Database, resourceIds: 
  * @returns a transaction bundle containing all resources which have not already been added to
  * a previous transaction bundle, and their dependencies.
  */
-export async function addDisconnectedResources(
+/* export async function addDisconnectedResources(
   DB: sqlite.Database,
   addedResources: Set<string>
 ): Promise<TransactionBundle | void> {
@@ -169,7 +173,7 @@ export async function addDisconnectedResources(
     return cleanUpBundle;
   }
 }
-
+ */
 /**
  * Wrapper function to populate DB, get all patients and resources
  * that reference them, and create transaction bundle.
@@ -178,7 +182,7 @@ export async function addDisconnectedResources(
  * @returns TransactionBundle promise that can be uploaded to test
  * server
  */
-export async function assembleTransactionBundles(DB: sqlite.Database): Promise<TransactionBundle[]> {
+/* export async function assembleTransactionBundles(DB: sqlite.Database): Promise<TransactionBundle[]> {
   const bundleArray: TransactionBundle[] = [];
   const addedResources: Set<string> = new Set();
   // get all patient Ids from database
@@ -215,4 +219,4 @@ export async function assembleTransactionBundles(DB: sqlite.Database): Promise<T
     bundleArray.push(cleanUpBundle.toJSON());
   }
   return bundleArray;
-}
+} */
