@@ -83,16 +83,15 @@ async function retrieveBulkDataFromRequirements(
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const params = getDataRequirementsQueries(requirements, useTypeFilters);
 
-  //TODO: figure out how to override this if exportUrl contains these already
-  // contains _type and _typeFilter, just _type, just _typeFilter
   let url = exportUrl;
-  if (!exportUrl.includes('_type=') {
-    
+  if (!exportUrl.includes('_type=')) {
+    url += `${exportUrl.includes('_typeFilter=') ? '&' : '?'}_type=${params._type}`;
   }
-  let url = `${exportUrl}?_type=${params._type}`;
 
-  if (params._typeFilter) {
-    url += `&_typeFilter=${params._typeFilter}`;
+  if (!exportUrl.includes('_typeFilter=')) {
+    if (params._typeFilter) {
+      url += `${exportUrl.includes('_type=') ? '&' : '?'}_typeFilter=${params._typeFilter}`;
+    }
   }
 
   return await queryBulkDataServer(url);
