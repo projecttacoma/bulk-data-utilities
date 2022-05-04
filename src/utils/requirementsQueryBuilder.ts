@@ -35,6 +35,12 @@ export const getDataRequirementsQueries = (
     }
     return acc;
   }, []);
+
+  // Since DataRequirements won't include Patient resources, add them manually
+  if (!uniqTypes.includes('Patient')) {
+    uniqTypes.push('Patient');
+  }
+
   const formattedTypes = uniqTypes.join(',');
 
   let typeFilterString = '';

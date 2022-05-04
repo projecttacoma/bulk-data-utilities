@@ -74,22 +74,22 @@ const EXPECTED_DATA_REQUIREMENTS_PATIENT = {
 };
 
 const EXPECTED_DATA_REQUIREMENTS_PROCEDURE_W_VALUESET = {
-  _type: 'Procedure',
+  _type: 'Procedure,Patient',
   _typeFilter: 'Procedure%3Ftype%3Ain=TEST_VALUE_SET'
 };
 
 const EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_W_CODE = {
-  _type: 'Encounter',
+  _type: 'Encounter,Patient',
   _typeFilter: 'Encounter%3Fcode%3Ain=TEST_VALUE_SET'
 };
 
 const EXPECTED_DATA_REQUIREMENTS_MULTIPLE = {
-  _type: 'Procedure,Encounter',
+  _type: 'Procedure,Encounter,Patient',
   _typeFilter: 'Procedure%3Ftype%3Ain=TEST_VALUE_SET,Encounter%3Fcode%3Ain=TEST_VALUE_SET'
 };
 
 const EXPECTED_DATA_REQUIREMENTS_ENCOUNTER_IS_CODE = {
-  _type: 'Encounter',
+  _type: 'Encounter,Patient',
   _typeFilter: 'Encounter%3Fcode=TEST_CODE'
 };
 
