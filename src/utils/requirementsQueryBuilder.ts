@@ -76,7 +76,7 @@ export async function retrieveBulkDataFromMeasureBundle(
  * @param exportUrl: export server URL string
  */
 
-async function retrieveBulkDataFromRequirements(
+export async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
   exportUrl: string,
   useTypeFilters?: boolean
@@ -90,7 +90,7 @@ async function retrieveBulkDataFromRequirements(
 
   if (!exportUrl.includes('_typeFilter=')) {
     if (params._typeFilter) {
-      url += `${exportUrl.includes('_type=') ? '&' : '?'}_typeFilter=${params._typeFilter}`;
+      url += `${url.includes('_type=') ? '&' : '?'}_typeFilter=${params._typeFilter}`;
     }
   }
 
