@@ -76,16 +76,22 @@ export async function retrieveBulkDataFromMeasureBundle(
  * @param exportUrl: export server URL string
  */
 
-async function retrieveBulkDataFromRequirements(
+export async function retrieveBulkDataFromRequirements(
   requirements: fhir4.DataRequirement[],
   exportUrl: string,
   useTypeFilters?: boolean
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
   const params = getDataRequirementsQueries(requirements, useTypeFilters);
-  let url = `${exportUrl}?_type=${params._type}`;
 
-  if (params._typeFilter) {
-    url += `&_typeFilter=${params._typeFilter}`;
+  let url = exportUrl;
+  if (!exportUrl.includes('_type=')) {
+    url += `${exportUrl.includes('_typeFilter=') ? '&' : '?'}_type=${params._type}`;
+  }
+
+  if (!exportUrl.includes('_typeFilter=')) {
+    if (params._typeFilter) {
+      url += `${url.includes('_type=') ? '&' : '?'}_typeFilter=${params._typeFilter}`;
+    }
   }
 
   return await queryBulkDataServer(url);

@@ -1,5 +1,9 @@
 import * as exportQueries from '../src/utils/exportServerQueryBuilder';
-import { retrieveAllBulkData, getDataRequirementsQueries } from '../src/utils/requirementsQueryBuilder';
+import {
+  retrieveAllBulkData,
+  getDataRequirementsQueries,
+  retrieveBulkDataFromRequirements
+} from '../src/utils/requirementsQueryBuilder';
 
 const DATA_REQUIREMENTS_PATIENT = [
   {
@@ -133,5 +137,28 @@ describe('retrieveAllBulkData Tests', () => {
     });
     await retrieveAllBulkData('https://example.com/$export');
     expect(qbdSpy).toHaveBeenCalledWith('https://example.com/$export');
+  });
+});
+
+describe('retrieveBulkDataFromRequirements Tests', () => {
+  test('Should call queryBulkDataServer with existing type and type filter parameters from url', async () => {
+    const qbdSpy = jest.spyOn(exportQueries, 'queryBulkDataServer').mockImplementationOnce(async () => {
+      return { output: null };
+    });
+    await retrieveBulkDataFromRequirements(
+      DATA_REQUIREMENTS_MULTIPLE,
+      'https://example.com/$export?_type=testType&_typeFilter=testFilter'
+    );
+    expect(qbdSpy).toHaveBeenCalledWith('https://example.com/$export?_type=testType&_typeFilter=testFilter');
+  });
+
+  test('Should call queryBulkDataServer with type and type filter parameters from requirements', async () => {
+    const qbdSpy = jest.spyOn(exportQueries, 'queryBulkDataServer').mockImplementationOnce(async () => {
+      return { output: null };
+    });
+    await retrieveBulkDataFromRequirements(DATA_REQUIREMENTS_MULTIPLE, 'https://example.com/$export', true);
+    expect(qbdSpy).toHaveBeenCalledWith(
+      'https://example.com/$export?_type=Procedure,Encounter&_typeFilter=Procedure%3Ftype%3Ain=TEST_VALUE_SET,Encounter%3Fcode%3Ain=TEST_VALUE_SET'
+    );
   });
 });
