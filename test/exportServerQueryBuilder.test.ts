@@ -6,7 +6,7 @@ const INVALID_URL_ERROR = 'connect ECONNREFUSED 127.0.0.1:80';
 const EXPECTED_INVALID_URL_RESPONSE = `Failed reaching out to bulk export server with message: ${INVALID_URL_ERROR}`;
 const ERROR_STATUS = { status: 500 };
 const EXPECTED_STATUS_ERROR_RESPONSE = `Unexpected response from bulk export server status: ${ERROR_STATUS.status}`;
-const EXPECTED_UNKNOWN_ERROR_RESPONSE = 'An unknown ocurred while retrieving data from bulk export server';
+const EXPECTED_UNKNOWN_ERROR_RESPONSE = 'An unknown occurred while retrieving data from bulk export server';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
