@@ -13,7 +13,6 @@ const headers = {
  */
 export async function queryBulkDataServer(url: string): Promise<{ output: BulkDataResponse[] | null }> {
   try {
-    // add if statement if exportTYpe is static then just send get request
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch (e) {
@@ -52,7 +51,7 @@ export async function probeServer(url: string): Promise<{ output: BulkDataRespon
 }
 
 /**
- * Function to handle get request when the exportType is static
+ * Handles the GET request when the exportType is static.
  */
 export async function getStaticManifest(url: string): Promise<{ output: BulkDataResponse[] | null }> {
   let results;
