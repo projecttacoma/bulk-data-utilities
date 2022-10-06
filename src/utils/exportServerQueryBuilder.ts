@@ -46,6 +46,26 @@ export async function probeServer(url: string): Promise<{ output: BulkDataRespon
   } else if (results) {
     throw new Error(`Unexpected response from bulk export server status: ${results.status}`);
   } else {
-    throw new Error('An unknown ocurred while retrieving data from bulk export server');
+    throw new Error('An unknown occurred while retrieving data from bulk export server');
+  }
+}
+
+/**
+ * When the exportType is "static", a GET request is issued to the export Url to retrieve
+ * a manifest file with the location of the bulk data files.
+ */
+export async function getStaticManifest(url: string): Promise<{ output: BulkDataResponse[] | null }> {
+  let results;
+  try {
+    results = await axios.get(url, { headers });
+  } catch (e) {
+    throw new Error(`Failed reaching out to bulk export server with message: ${e.message}`);
+  }
+  if (results && results.status === 200) {
+    return { output: results.data.output };
+  } else if (results) {
+    throw new Error(`Unexpected response form bulk export server status: ${results.status}`);
+  } else {
+    throw new Error('An unknown error occurred while retrieving data from bulk export server');
   }
 }
