@@ -51,7 +51,8 @@ export async function probeServer(url: string): Promise<{ output: BulkDataRespon
 }
 
 /**
- * Handles the GET request when the exportType is static.
+ * When the exportType is "static", a GET request is issued to the export Url to retrieve
+ * a manifest file with the location of the bulk data files.
  */
 export async function getStaticManifest(url: string): Promise<{ output: BulkDataResponse[] | null }> {
   let results;
