@@ -8,7 +8,7 @@
   ],
   "dependencies": {
     "axios": "^0.21.2",
-    "fqm-execution": "^0.8.0",
+    "fqm-execution": "^1.0.0-beta.6",
     "path": "^0.12.7"
   },
   "devDependencies": {
