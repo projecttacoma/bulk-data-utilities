@@ -16,7 +16,7 @@ export async function queryBulkDataServer(url: string): Promise<{ output: BulkDa
     const resp = await axios.get(url, { headers });
     return await probeServer(resp.headers['content-location']);
   } catch (e) {
-    throw new Error(`Failed reaching out to bulk export server with message: ${e.message}`);
+    throw new Error(`Failed reaching out to bulk export server with message: ${(e as Error).message}`);
   }
 }
 
@@ -39,7 +39,7 @@ export async function probeServer(url: string): Promise<{ output: BulkDataRespon
       results = await axios.get(url, { headers });
     }
   } catch (e) {
-    throw new Error(`Failed reaching out to bulk export server with message: ${e.message}`);
+    throw new Error(`Failed reaching out to bulk export server with message: ${(e as Error).message}`);
   }
   if (results && results.status === 200) {
     return { output: results.data.output };
@@ -59,7 +59,7 @@ export async function getStaticManifest(url: string): Promise<{ output: BulkData
   try {
     results = await axios.get(url, { headers });
   } catch (e) {
-    throw new Error(`Failed reaching out to bulk export server with message: ${e.message}`);
+    throw new Error(`Failed reaching out to bulk export server with message: ${(e as Error).message}`);
   }
   if (results && results.status === 200) {
     return { output: results.data.output };

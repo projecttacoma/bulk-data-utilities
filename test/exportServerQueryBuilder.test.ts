@@ -18,7 +18,7 @@ describe('queryBulkServer Tests', () => {
       await queryBulkDataServer(INVALID_URL);
       fail('Error was not thrown');
     } catch (e) {
-      expect(e.message).toEqual(EXPECTED_INVALID_URL_RESPONSE);
+      expect((e as Error).message).toEqual(EXPECTED_INVALID_URL_RESPONSE);
     }
   });
   test('Throw error if invalid export URL given to probeServer', async () => {
@@ -27,7 +27,7 @@ describe('queryBulkServer Tests', () => {
       await probeServer(INVALID_URL);
       fail('Error was not thrown');
     } catch (e) {
-      expect(e.message).toEqual(EXPECTED_INVALID_URL_RESPONSE);
+      expect((e as Error).message).toEqual(EXPECTED_INVALID_URL_RESPONSE);
     }
   });
   test('Throw error if probeServer returns code outside of 200 or 202', async () => {
@@ -36,7 +36,7 @@ describe('queryBulkServer Tests', () => {
       await probeServer(EXAMPLE_URL);
       fail('Error was not thrown');
     } catch (e) {
-      expect(e.message).toEqual(EXPECTED_STATUS_ERROR_RESPONSE);
+      expect((e as Error).message).toEqual(EXPECTED_STATUS_ERROR_RESPONSE);
     }
   });
   test('Throw error if probeServer noes not receive results', async () => {
@@ -45,7 +45,7 @@ describe('queryBulkServer Tests', () => {
       await probeServer(EXAMPLE_URL);
       fail('Error was not thrown');
     } catch (e) {
-      expect(e.message).toEqual(EXPECTED_UNKNOWN_ERROR_RESPONSE);
+      expect((e as Error).message).toEqual(EXPECTED_UNKNOWN_ERROR_RESPONSE);
     }
   });
 });

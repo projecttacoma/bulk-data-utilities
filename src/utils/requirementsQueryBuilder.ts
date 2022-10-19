@@ -18,7 +18,7 @@ export const getDataRequirementsQueries = (
   dataRequirements.forEach(dr => {
     if (dr.type) {
       const q: DRQuery = { endpoint: dr.type, params: {} };
-      if (dr?.codeFilter?.[0]?.code?.[0]) {
+      if (dr?.codeFilter?.[0]?.code?.[0].code) {
         const key = dr?.codeFilter?.[0].path;
         key && (q.params[key] = dr.codeFilter[0].code[0].code);
       } else if (dr?.codeFilter?.[0]?.valueSet) {
@@ -63,7 +63,7 @@ export async function retrieveBulkDataFromMeasureBundle(
   exportUrl: string,
   useTypeFilters?: boolean
 ): Promise<{ output?: BulkDataResponse[] | null; error?: string }> {
-  const dr = Calculator.calculateDataRequirements(measureBundle);
+  const dr = await Calculator.calculateDataRequirements(measureBundle);
   if (!dr.results.dataRequirement) {
     dr.results.dataRequirement = [];
   }
