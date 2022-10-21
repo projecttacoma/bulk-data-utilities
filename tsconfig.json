@@ -13,6 +13,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2020"],
-    "sourceMap": true
+    "sourceMap": true,
+    "declaration": true
   }
 }
