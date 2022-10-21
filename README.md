@@ -25,7 +25,7 @@ In order to install this library as a dependency for a project  to use in bulk d
 ## Local Development
 ### Prerequisites
 
-- [Node.js >=11.15.0](https://nodejs.org/en/)
+- [Node.js >=16.0.0](https://nodejs.org/en/)
 - [Git](https://git-scm.com/)
 
 
