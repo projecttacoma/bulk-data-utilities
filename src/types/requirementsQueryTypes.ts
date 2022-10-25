@@ -1,9 +1,6 @@
-export interface DRParameter {
-  [key: string]: string | undefined;
-}
 export interface DRQuery {
   endpoint: string;
-  params: DRParameter;
+  params: Record<string, string>;
 }
 
 export interface APIParams {
